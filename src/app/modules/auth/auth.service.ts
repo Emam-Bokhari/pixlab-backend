@@ -225,6 +225,10 @@ const loginUserFromDB = async (payload: ILoginPayload) => {
   // mark all previous refresh tokens as used
   await RefreshToken.updateMany({ user: user._id, used: false }, { $set: { used: true } });
 
+  // update last login time in database
+  const lastLoginAt = new Date();
+  await User.findByIdAndUpdate(user._id, { lastLoginAt });
+
   const tokens = await generateTokens({
     userId: user._id.toString(),
     email: user.email,
@@ -238,7 +242,7 @@ const loginUserFromDB = async (payload: ILoginPayload) => {
     isDeleted: user.isDeleted,
     status: user.status,
     name: user?.name || '',
-    lastLoginAt: new Date(),
+    lastLoginAt,
   };
 
   return {
