@@ -9,9 +9,10 @@ const createPhotoToDB = async (
   data: Omit<PhotoInput, 'sizeInfo'> & {
     file: Express.Multer.File; 
     sizeInfo: { name: string; mmWidth: number; mmHeight: number };
-  }
+  },
+  userId: string
 ): Promise<PhotoDocument> => {
-  const { userId, originalImage, photoType, bgColor = 'FFFFFF', copies, file, sizeInfo } = data;
+  const { originalImage, photoType, bgColor = 'FFFFFF', copies, file, sizeInfo } = data;
 
   const photo = new Photo({
     userId,
