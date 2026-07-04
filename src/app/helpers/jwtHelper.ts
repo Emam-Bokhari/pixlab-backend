@@ -17,7 +17,7 @@ const createToken = (payload: TokenPayload, secret: Secret, expiresIn: string = 
   return jwt.sign(payload, secret, {
     expiresIn,
     algorithm: 'HS512',
-    issuer: 'OctoSass',
+    issuer: 'photolagbe',
   } as jwt.SignOptions);
 };
 
@@ -29,7 +29,7 @@ const verifyToken = (token: string, secret: Secret) => {
   try {
     return jwt.verify(token, secret, {
       algorithms: ['HS512'],
-      issuer: 'OctoSass',
+      issuer: 'photolagbe',
     }) as JwtPayload;
   } catch (err) {
     throw new HttpError(401, 'Invalid or expired token');

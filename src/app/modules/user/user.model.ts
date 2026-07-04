@@ -41,9 +41,15 @@ const authenticationSchema = new Schema(
 /* ---------- User Schema ---------- */
 const userSchema = new Schema<TUser, UserModel>(
   {
-    name: { type: String, required: true },
+    name: {
+      type: String,
+      required: true,
+    },
 
-    profileImage: { type: String },
+    profileImage: {
+      type: String,
+      default: '',
+    },
 
     email: {
       type: String,
@@ -83,7 +89,6 @@ const userSchema = new Schema<TUser, UserModel>(
     versionKey: false,
   },
 );
-
 
 userSchema.statics.isExistUserById = function (id: string) {
   return this.findById(id);
