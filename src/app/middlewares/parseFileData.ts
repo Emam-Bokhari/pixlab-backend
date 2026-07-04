@@ -107,13 +107,15 @@ export const downloadAndSaveProcessedImage = async (
 ): Promise<string> => {
   try {
     const response = await axios.get(cutoutUrl, { 
-      responseType: 'arraybuffer' 
+      responseType: 'arraybuffer',
+      headers: {
+        'Accept': 'image/png, image/jpeg, image/webp'
+      }
     });
 
     const buffer = Buffer.from(response.data);
 
-    
-    const folderName: IFolderName = 'originalImage';
+    const folderName: IFolderName = 'originalImage'; 
     const dir = path.join(BASE_UPLOAD_DIR, folderName);
     
     if (!fs.existsSync(dir)) {
@@ -123,14 +125,12 @@ export const downloadAndSaveProcessedImage = async (
     const fileName = `${userId}-${photoType}-${type}-${Date.now()}.png`;
     const filePath = path.join(dir, fileName);
 
- 
     fs.writeFileSync(filePath, buffer);
 
-  
     return `/uploads/${folderName}/${fileName}`;
 
   } catch (error) {
-    console.error('Failed to download and save image:', error);
-    throw new Error('Failed to save processed image locally');
+    console.error('Image download failed:', error);
+    throw new Error('Failed to download and save processed image');
   }
 };
