@@ -122,7 +122,7 @@ const deleteBlogByIdToDB = async (blogId: string) => {
     await unlinkFile(existing.coverImage);
   }
 
-  const result = await Blog.findByIdAndUpdate(blogId, { isDeleted: true }, { new: true });
+  const result = await Blog.softDeleteById(blogId);
 
   if (!result) {
     throw new HttpError(400, 'Failed to delete blog');
