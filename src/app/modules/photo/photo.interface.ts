@@ -16,7 +16,7 @@ export interface PhotoInput {
   sizeInfo: SizeInfo;
 
   bgColor?: string;
-  copies?: 1 | 4 | 6 | 8;
+  copies?: number;
   paperSize?: PAPER_SIZE;
 }
 
@@ -34,9 +34,9 @@ export interface PhotoDocument extends PhotoInput {
   createdAt: Date;
   expiresAt?: Date;
   printOptions: {
-  paperSize: { type: String, default: 'A4' },
-  marginMm: { type: Number, default: 5 },
-  gapMm: { type: Number, default: 3 },
-  columns: { type: Number },         
-},
+    paperSize: PAPER_SIZE;
+    marginMm: number;
+    gapMm: number;
+    columns?: number;
+  },
 }

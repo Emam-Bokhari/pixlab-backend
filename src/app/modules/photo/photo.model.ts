@@ -68,7 +68,6 @@ const photoSchema = new Schema<PhotoDocument>(
     copies: {
       type: Number,
       default: 1,
-      enum: [1, 4, 6, 8],
     },
 
     // Cutout Pro Response

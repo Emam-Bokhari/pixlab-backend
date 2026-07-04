@@ -15,6 +15,10 @@ router.route('/').post(
   }),PhotoControllers.createPhoto,
 );
 
+router.route('/:id').post(
+  isAuthenticated,
+  PhotoControllers.regeneratePrintLayout,
+);
 
 
 
