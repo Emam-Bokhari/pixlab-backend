@@ -1,0 +1,60 @@
+import express from 'express';
+import { AuthRoutes } from '../modules/auth/auth.route';
+import { SupportRoutes } from '../modules/support/support.route';
+import { ContentPageRoutes } from '../modules/contentPage/contentPage.route';
+import { FaqRoutes } from '../modules/faq/faq.route';
+import { BlogRoutes } from '../modules/blog/blog.route';
+import { AdminRoutes } from '../modules/admin/admin.route';
+import { UserRoutes } from '../modules/user/user.route';
+import { ChatRoutes } from '../modules/chat/chat.route';
+import { MessageRoutes } from '../modules/message/message.route';
+import { FcmTokenRoutes } from '../modules/fcmToken/fcmToken.route';
+
+const v1Router = express.Router();
+
+const apiRoutes = [
+  {
+    path: '/auth',
+    route: AuthRoutes,
+  },
+  {
+    path: '/supports',
+    route: SupportRoutes,
+  },
+  {
+    path: '/content-pages',
+    route: ContentPageRoutes,
+  },
+  {
+    path: '/faqs',
+    route: FaqRoutes,
+  },
+  {
+    path: '/blogs',
+    route: BlogRoutes,
+  },
+  {
+    path: '/admins',
+    route: AdminRoutes,
+  },
+  {
+    path: '/users',
+    route: UserRoutes,
+  },
+  {
+    path: '/chats',
+    route: ChatRoutes,
+  },
+  {
+    path: '/messages',
+    route: MessageRoutes,
+  },
+  {
+    path: '/fcm-tokens',
+    route: FcmTokenRoutes,
+  }
+];
+
+apiRoutes.forEach((route) => v1Router.use(route.path, route.route));
+
+export default v1Router;

@@ -1,0 +1,53 @@
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+
+export default {
+  port: process.env.PORT,
+  database_url: process.env.DATABASE_URL,
+  node_env: process.env.NODE_ENV,
+  super_admin_password: process.env.SUPER_ADMIN_PASSWORD,
+  super_admin_email: process.env.SUPER_ADMIN_EMAIL,
+  support_email: process.env.SUPPORT_EMAIL,
+  max_otp_attempts: process.env.MAX_OTP_ATTEMPTS,
+  frontend_url: process.env.FRONTEND_URL,
+
+  redis: {
+    redis_host: process.env.REDIS_HOST,
+    redis_port: process.env.REDIS_PORT,
+    redis_password: process.env.REDIS_PASSWORD,
+    redis_db: process.env.REDIS_DB,
+  },
+  firebase: {
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+  },
+  stripe: {
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY!,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+    paymentSuccess: process.env.STRIPE_PAYMENT_SUCCESS!,
+    BASE_URL: process.env.BASE_URL!,
+    currency: process.env.CURRENCY!,
+  },
+  email: {
+    from: process.env.EMAIL_FROM,
+    user: process.env.EMAIL_USER,
+    port: process.env.EMAIL_PORT,
+    host: process.env.EMAIL_HOST,
+    pass: process.env.EMAIL_PASS,
+  },
+  gemini_api_key: process.env.GEMINI_API_KEY,
+  jwt: {
+    jwt_secret: process.env.JWT_SECRET,
+    jwt_expire_in: process.env.JWT_EXPIRE_IN,
+    jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
+    jwt_refresh_expire_in: process.env.JWT_REFRESH_EXPIRE_IN,
+  },
+  bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
+  otp_salt_rounds: process.env.OTP_SALT_ROUNDS,
+  otp_length: process.env.OTP_LENGTH,
+  resend_api_key: process.env.RESEND_API_KEY,
+  default_email_from: process.env.DEFAULT_EMAIL_FROM,
+};

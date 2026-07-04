@@ -1,0 +1,5 @@
+export enum BLOG_STATUS {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+}
