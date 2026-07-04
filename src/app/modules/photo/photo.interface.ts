@@ -7,7 +7,7 @@ export interface SizeInfo {
   mmHeight: number;
 }
 
-export interface PhotoRequestInput {
+export interface PhotoInput {
   userId: Types.ObjectId;         
   originalImage: string;
   country?: string;
@@ -19,7 +19,7 @@ export interface PhotoRequestInput {
   copies?: 1 | 4 | 6 | 8;
 }
 
-export interface PhotoRequestDocument extends PhotoRequestInput {
+export interface PhotoDocument extends PhotoInput {
   _id: string;
   idPhotoImage?: string;
   printLayoutImage?: string;

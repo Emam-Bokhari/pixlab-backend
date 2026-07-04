@@ -1,8 +1,9 @@
 import mongoose, { Schema } from 'mongoose';
 import { PHOTO_STATUS, PHOTO_TYPE } from './photo.constant';
-import { PhotoRequestDocument } from './photo.interface';
+import { PhotoDocument } from './photo.interface';
 
-const photoRequestSchema = new Schema<PhotoRequestDocument>(
+
+const photoSchema = new Schema<PhotoDocument>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -94,9 +95,8 @@ const photoRequestSchema = new Schema<PhotoRequestDocument>(
   },
 );
 
-photoRequestSchema.index({ userId: 1, createdAt: -1 });
-photoRequestSchema.index({ status: 1 });
+photoSchema.index({ userId: 1, createdAt: -1 });
+photoSchema.index({ status: 1 });
 
-const PhotoRequest = mongoose.model<PhotoRequestDocument>('PhotoRequest', photoRequestSchema);
+export const Photo = mongoose.model<PhotoDocument>('Photo', photoSchema);
 
-export default PhotoRequest;

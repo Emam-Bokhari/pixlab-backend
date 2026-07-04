@@ -50,4 +50,6 @@ export default {
   otp_length: process.env.OTP_LENGTH,
   resend_api_key: process.env.RESEND_API_KEY,
   default_email_from: process.env.DEFAULT_EMAIL_FROM,
+  cutout_pro_api_key: process.env.CUTOUT_PRO_API_KEY,
+  cutout_pro_api_url: process.env.CUTOUT_PRO_API_URL,
 };
