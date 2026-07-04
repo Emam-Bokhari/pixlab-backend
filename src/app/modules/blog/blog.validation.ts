@@ -20,7 +20,6 @@ const createBlogZodSchema = z.object({
       .optional(),
 
     isFeatured: z.boolean().optional(),
-    readTime: z.number().optional(),
     publishedAt: z.date().optional(),
   }),
 });
@@ -44,7 +43,6 @@ const updateBlogZodSchema = z.object({
       .optional(),
 
     isFeatured: z.boolean().optional(),
-    readTime: z.number().optional(),
     publishedAt: z.date().optional(),
   }),
 });

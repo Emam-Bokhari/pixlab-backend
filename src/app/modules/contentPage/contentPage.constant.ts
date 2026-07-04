@@ -1,5 +1,5 @@
 export enum CONTENT_PAGE_TYPE {
-  PRIVACY = 'PRIVACY',
-  TERMS = 'TERMS',
-  ABOUT = 'ABOUT',
+  PRIVACY = 'privacy',
+  TERMS = 'terms',
+  ABOUT = 'about',
 }

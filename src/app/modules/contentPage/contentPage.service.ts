@@ -17,7 +17,7 @@ const createContentPageToDB = async (type: CONTENT_PAGE_TYPE, content: string) =
 };
 
 const getContentPageByTypeFromDB = async (type: CONTENT_PAGE_TYPE) => {
-  const result = await ContentPage.findOne({ type: type.toUpperCase() });
+  const result = await ContentPage.findOne({ type });
   if (!result) {
     throw new HttpError(404, 'No content page found in the database by given type');
   }

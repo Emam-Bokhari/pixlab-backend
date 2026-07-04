@@ -16,12 +16,7 @@ const blogSchema = new Schema<TBlog, BlogModel>(
       default: BLOG_STATUS.DRAFT,
       index: true,
     },
-    metrics: {
-      views: { type: Number, default: 0, min: 0 },
-      likes: { type: Number, default: 0, min: 0 },
-    },
     isFeatured: { type: Boolean, default: false, index: true },
-    readTime: { type: Number, default: 0 },
     publishedAt: { type: Date, index: true },
   },
   {

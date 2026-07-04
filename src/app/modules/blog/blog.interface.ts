@@ -8,12 +8,7 @@ export interface TBlog {
   coverImage?: string;
   tags: string[];
   status: BLOG_STATUS;
-  metrics: {
-    views: number;
-    likes: number;
-  };
   isFeatured: boolean;
-  readTime?: number;
   publishedAt?: Date;
 }
 
