@@ -1,3 +1,5 @@
+import { SizeInfo } from './photo.interface';
+
 export enum PHOTO_TYPE {
   NID = 'nid',
   PASSPORT = 'passport',
@@ -12,3 +14,36 @@ export enum PHOTO_STATUS {
   SUCCESS = 'success',
   FAILED = 'failed',
 }
+
+export type CountryPhotoSizes = {
+  [key in Exclude<PHOTO_TYPE, PHOTO_TYPE.CUSTOM>]: SizeInfo;
+};
+
+export type PhotoSizes = {
+  [country: string]: CountryPhotoSizes;
+};
+
+export const photoSizes: PhotoSizes = {
+  Bangladesh: {
+    passport: { 
+      name: "Passport Size", 
+      mmWidth: 35, 
+      mmHeight: 45 
+    },
+    nid: { 
+      name: "NID / Smart Card", 
+      mmWidth: 35, 
+      mmHeight: 45 
+    },
+    stamp: { 
+      name: "Stamp Size", 
+      mmWidth: 25, 
+      mmHeight: 35 
+    },
+    visa: { 
+      name: "Visa Photo", 
+      mmWidth: 35, 
+      mmHeight: 45 
+    }
+  }
+};
