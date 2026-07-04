@@ -119,7 +119,7 @@ const deleteProfileFromDB = async (userId: string, password: string) => {
   }
 
   // delete user
-  const result = await User.findByIdAndDelete(userId);
+  const result = await User.softDeleteById(userId);
   if (!result) {
     throw new HttpError(400, 'Failed to delete this user');
   }

@@ -1,6 +1,7 @@
-import { Model, Types } from 'mongoose';
+import { Model, Types, Document } from 'mongoose';
 import { USER_ROLE, USER_STATUS } from '../../types/enum';
 import { AUTH_PURPOSE } from '../auth/auth.constant';
+import { ISoftDeleteMethods, ISoftDeleteStatics } from '../../DB/plugins/softDelete.plugin';
 
 export type TUser = {
   name:string;
@@ -11,6 +12,7 @@ export type TUser = {
   isVerified: boolean;
   isActive: boolean;
   isDeleted: boolean;
+  deletedAt?: Date;
   status?: USER_STATUS;
   lastLoginAt?: Date;
   authentication?: {
@@ -21,11 +23,11 @@ export type TUser = {
   };
 };
 
-export interface UserDocument extends TUser, Document {
+export interface UserDocument extends TUser, Document, ISoftDeleteMethods {
   _id: Types.ObjectId;
 }
 
-export interface UserModel extends Model<UserDocument> {
+export interface UserModel extends Model<UserDocument>, ISoftDeleteStatics<UserDocument> {
   isExistUserById(id: string): Promise<UserDocument | null>;
   isExistUserByEmail(email: string): Promise<UserDocument | null>;
   isMatchPassword(password: string, hashPassword: string): Promise<boolean>;

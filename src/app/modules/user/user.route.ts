@@ -1,6 +1,8 @@
 import express from 'express';
 import { UserControllers } from './user.controller';
 import { isAdmin, isAuthenticated } from '../../helpers/auth.helper';
+import fileUploadHandler from '../../middlewares/fileUploadHandler';
+import { parseFileData } from '../../middlewares/parseFileData';
 
 const router = express.Router();
 
@@ -14,7 +16,17 @@ router
 router
   .route('/me/profile')
   .get(isAuthenticated, UserControllers.getMyProfile)
-  .patch(isAuthenticated, UserControllers.updateProfile)
+  .patch(
+    isAuthenticated,
+    fileUploadHandler(),
+    parseFileData(
+      {
+        fieldName: 'profileImage',
+        mode: 'single',
+      }
+    ),
+    UserControllers.updateProfile,
+  )
   .delete(isAuthenticated, UserControllers.deleteMyProfile);
 
 router.route('/:userId/status').patch(isAdmin, UserControllers.updateUserStatus);

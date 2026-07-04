@@ -71,8 +71,9 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
 
   // static methods
   schema.statics.softDeleteById = function (id: string) {
-    return this.findOneAndUpdate(
-      { _id: id },
+    // explicitly include isDeleted in filter to bypass the automatic exclusion
+    return (this as any).findOneAndUpdate(
+      { _id: id, isDeleted: { $ne: true } },
       { $set: { isDeleted: true, deletedAt: new Date() } },
       { new: true },
     );
@@ -80,7 +81,7 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
 
   schema.statics.restoreById = function (id: string) {
     // restore a single document by ID
-    // explicitly filter out deleted documents
+    // explicitly filter for deleted documents
     return (this as any).findOneAndUpdate(
       { _id: id, isDeleted: true },
       { $set: { isDeleted: false, deletedAt: null } },
@@ -89,13 +90,15 @@ export function softDeletePlugin<T>(schema: Schema<T>) {
   };
 
   schema.statics.softDeleteMany = function (filter: any) {
-    return this.updateMany(filter, {
-      $set: { isDeleted: true, deletedAt: new Date() },
-    });
+    // explicitly include isDeleted to bypass automatic exclusion
+    return (this as any).updateMany(
+      { ...filter, isDeleted: { $ne: true } },
+      { $set: { isDeleted: true, deletedAt: new Date() } },
+    );
   };
 
   schema.statics.restoreMany = function (filter: any) {
-    return this.updateMany(
+    return (this as any).updateMany(
       { ...filter, isDeleted: true },
       { $set: { isDeleted: false, deletedAt: null } },
     );
