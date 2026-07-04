@@ -15,4 +15,7 @@ router.route('/').post(
   }),PhotoControllers.createPhoto,
 );
 
+
+
+
 export const PhotoRoutes = router;

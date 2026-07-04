@@ -15,6 +15,14 @@ export enum PHOTO_STATUS {
   FAILED = 'failed',
 }
 
+export enum PAPER_SIZE {
+  FOUR_R = '4R',
+  FIVE_R = '5R',
+  SIX_R = '6R',
+  A_FOUR = 'A4',
+}
+
+
 export type CountryPhotoSizes = {
   [key in Exclude<PHOTO_TYPE, PHOTO_TYPE.CUSTOM>]: SizeInfo;
 };
@@ -25,25 +33,25 @@ export type PhotoSizes = {
 
 export const photoSizes: PhotoSizes = {
   Bangladesh: {
-    passport: { 
-      name: "Passport Size", 
-      mmWidth: 35, 
-      mmHeight: 45 
+    passport: {
+      name: 'Passport Size',
+      mmWidth: 35,
+      mmHeight: 45,
     },
-    nid: { 
-      name: "NID / Smart Card", 
-      mmWidth: 35, 
-      mmHeight: 45 
+    nid: {
+      name: 'NID / Smart Card',
+      mmWidth: 35,
+      mmHeight: 45,
     },
-    stamp: { 
-      name: "Stamp Size", 
-      mmWidth: 25, 
-      mmHeight: 35 
+    stamp: {
+      name: 'Stamp Size',
+      mmWidth: 25,
+      mmHeight: 35,
     },
-    visa: { 
-      name: "Visa Photo", 
-      mmWidth: 35, 
-      mmHeight: 45 
-    }
-  }
+    visa: {
+      name: 'Visa Photo',
+      mmWidth: 35,
+      mmHeight: 45,
+    },
+  },
 };

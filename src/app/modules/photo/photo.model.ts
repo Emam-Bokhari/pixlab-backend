@@ -1,7 +1,25 @@
 import mongoose, { Schema } from 'mongoose';
-import { PHOTO_STATUS, PHOTO_TYPE } from './photo.constant';
+import { PAPER_SIZE, PHOTO_STATUS, PHOTO_TYPE } from './photo.constant';
 import { PhotoDocument } from './photo.interface';
 
+const printOptionsSchema = new Schema({
+  paperSize: {
+    type: String,
+    default: PAPER_SIZE.A_FOUR,
+  },
+  marginMm: {
+    type: Number,
+    default: 5,
+  },
+  gapMm: {
+    type: Number,
+    default: 3,
+  },
+  columns: {
+    type: Number,
+    default: 2,
+  },
+});
 
 const photoSchema = new Schema<PhotoDocument>(
   {
@@ -79,6 +97,22 @@ const photoSchema = new Schema<PhotoDocument>(
       type: Boolean,
       default: false,
     },
+
+    pngUrl: {
+      type: String,
+      default: '',
+    },
+
+    jpgUrl: {
+      type: String,
+      default: '',
+    },
+
+    webpUrl: {
+      type: String,
+      default: '',
+    },
+    printOptions: printOptionsSchema,
 
     createdAt: {
       type: Date,

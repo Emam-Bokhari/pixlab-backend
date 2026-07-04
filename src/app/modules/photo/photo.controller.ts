@@ -21,6 +21,8 @@ const createPhoto = catchAsync(async (req, res) => {
   });
 });
 
+
+
 export const PhotoControllers = {
   createPhoto,
 };

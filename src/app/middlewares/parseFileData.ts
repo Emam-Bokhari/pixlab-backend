@@ -5,6 +5,7 @@ import { HttpError } from '../errors/HttpError';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 
 // types
 interface FileFieldConfig {
@@ -100,37 +101,67 @@ const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 
 export const downloadAndSaveProcessedImage = async (
-  cutoutUrl: string,
+  input: Buffer | string,                    // Buffer or URL
   userId: string,
   photoType: string,
-  type: 'single' | 'layout' = 'single'
+  variant: 'png' | 'jpg' | 'webp' | 'layout' | 'single'
 ): Promise<string> => {
-  try {
-    const response = await axios.get(cutoutUrl, { 
-      responseType: 'arraybuffer',
-      headers: {
-        'Accept': 'image/png, image/jpeg, image/webp'
-      }
-    });
+  let buffer: Buffer;
 
-    const buffer = Buffer.from(response.data);
-
-    const folderName: IFolderName = 'originalImage'; 
-    const dir = path.join(BASE_UPLOAD_DIR, folderName);
-    
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    const fileName = `${userId}-${photoType}-${type}-${Date.now()}.png`;
-    const filePath = path.join(dir, fileName);
-
-    fs.writeFileSync(filePath, buffer);
-
-    return `/uploads/${folderName}/${fileName}`;
-
-  } catch (error) {
-    console.error('Image download failed:', error);
-    throw new Error('Failed to download and save processed image');
+  // যদি URL দেয়া হয় তাহলে ডাউনলোড করবে
+  if (typeof input === 'string') {
+    const response = await axios.get(input, { responseType: 'arraybuffer' });
+    buffer = Buffer.from(response.data);
+  } else {
+    buffer = input;
   }
+
+  // Sharp দিয়ে ফরম্যাট অনুসারে প্রসেস
+  let sharpInstance = sharp(buffer);
+
+  switch (variant) {
+    case 'jpg':
+      sharpInstance = sharpInstance.jpeg({ 
+        quality: 95, 
+        progressive: true 
+      });
+      break;
+
+    case 'webp':
+      sharpInstance = sharpInstance.webp({ 
+        quality: 90,
+        alphaQuality: 100 
+      });
+      break;
+
+    case 'png':
+    case 'single':
+    case 'layout':
+    default:
+      sharpInstance = sharpInstance.png({ 
+        quality: 100,
+        compressionLevel: 6,
+        adaptiveFiltering: true 
+      });
+  }
+
+  const finalBuffer = await sharpInstance.toBuffer();
+
+  // সেভ করার ফোল্ডার
+  const folderName = 'processedImage';
+  const dir = path.join(BASE_UPLOAD_DIR, folderName);
+  
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  // File name
+  const ext = variant === 'jpg' ? 'jpg' : variant === 'webp' ? 'webp' : 'png';
+  const fileName = `${userId}-${photoType}-${variant}-${Date.now()}.${ext}`;
+  const filePath = path.join(dir, fileName);
+
+  // সেভ
+  fs.writeFileSync(filePath, finalBuffer);
+
+  return `/uploads/${folderName}/${fileName}`;
 };
