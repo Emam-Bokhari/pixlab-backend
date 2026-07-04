@@ -26,6 +26,11 @@ export const FILE_CONFIG = {
     maxCount: 1,
     mimeTypes: new Set(['image/png', 'image/jpeg', 'image/webp']),
   },
+  originalImage: {
+    dir: 'originalImage',
+    maxCount: 1,
+    mimeTypes: new Set(['image/png', 'image/jpeg']),
+  },
   images: {
     dir: 'images',
     maxCount: 10,

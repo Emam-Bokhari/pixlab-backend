@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { IFolderName } from './fileUploadHandler';
 import { mapFilesToUrls, mapFileToUrl } from './fileMapper';
 import { HttpError } from '../errors/HttpError';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 
 // types
 interface FileFieldConfig {
@@ -91,4 +94,43 @@ export const parseFileData = (...fields: FieldInput[]) => {
       next(error);
     }
   };
+};
+
+const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+
+
+export const downloadAndSaveProcessedImage = async (
+  cutoutUrl: string,
+  userId: string,
+  photoType: string,
+  type: 'single' | 'layout' = 'single'
+): Promise<string> => {
+  try {
+    const response = await axios.get(cutoutUrl, { 
+      responseType: 'arraybuffer' 
+    });
+
+    const buffer = Buffer.from(response.data);
+
+    
+    const folderName: IFolderName = 'originalImage';
+    const dir = path.join(BASE_UPLOAD_DIR, folderName);
+    
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const fileName = `${userId}-${photoType}-${type}-${Date.now()}.png`;
+    const filePath = path.join(dir, fileName);
+
+ 
+    fs.writeFileSync(filePath, buffer);
+
+  
+    return `/uploads/${folderName}/${fileName}`;
+
+  } catch (error) {
+    console.error('Failed to download and save image:', error);
+    throw new Error('Failed to save processed image locally');
+  }
 };

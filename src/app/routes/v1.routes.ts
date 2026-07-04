@@ -9,6 +9,7 @@ import { UserRoutes } from '../modules/user/user.route';
 import { ChatRoutes } from '../modules/chat/chat.route';
 import { MessageRoutes } from '../modules/message/message.route';
 import { FcmTokenRoutes } from '../modules/fcmToken/fcmToken.route';
+import { PhotoRoutes } from '../modules/photo/photo.route';
 
 const v1Router = express.Router();
 
@@ -52,7 +53,11 @@ const apiRoutes = [
   {
     path: '/fcm-tokens',
     route: FcmTokenRoutes,
-  }
+  },
+  {
+    path: '/photos',
+    route: PhotoRoutes,
+  },
 ];
 
 apiRoutes.forEach((route) => v1Router.use(route.path, route.route));
