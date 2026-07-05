@@ -1,8 +1,7 @@
 import axios from 'axios';
 import fs from 'fs';
-import path from 'path';
 import { Photo } from './photo.model';
-import { bufferToBase64, downloadImageAsBuffer, downloadAndSaveProcessedImage, downloadAndSavePdf } from './photo.utils';
+import { bufferToBase64, downloadImageAsBuffer, downloadAndSaveProcessedImage, downloadAndSavePdf, readSavedFileBuffer } from './photo.utils';
 import { PAPER_SIZE, PHOTO_STATUS } from './photo.constant';
 import { PhotoDocument, PhotoInput } from './photo.interface';
 import config from '../../config';
@@ -11,8 +10,14 @@ import { DPI, RENDER_VERSION } from './layouts/layouts.constant';
 import { calculateLayout } from './layouts/layouts.layoutEngine';
 import { renderLayout } from './layouts/layouts.renderLayout';
 import { renderLayoutPdf } from './pdf/pdf.renderPdf';
+import { LayoutResult } from './layouts/layouts.type';
 
-
+// ---------------------------------------------------------------------
+// STEP 1 — base endpoint. Only talks to Cutout Pro and saves the single
+// background-removed photo (resized to sizeInfo). No layout compositing,
+// no format conversion, no PDF — those are separate endpoints below so
+// this one responds as fast as possible.
+// ---------------------------------------------------------------------
 const createPhotoToDB = async (
   data: Omit<PhotoInput, 'sizeInfo'> & {
     sizeInfo: { name: string; mmWidth: number; mmHeight: number };
@@ -24,11 +29,6 @@ const createPhotoToDB = async (
 
   if (!file) throw new Error('No file provided');
 
-  // Resolve the template up front so we fail fast (before calling the
-  // paid Cutout Pro API) if an unsupported copies/paper/photoType
-  // combination was requested.
-  const template = selectTemplate({ photoType, paperSize, copies });
-
   const photo = new Photo({
     userId,
     originalImage,
@@ -37,17 +37,11 @@ const createPhotoToDB = async (
     sizeInfo,
     bgColor,
     copies,
+    paperSize,
     status: 'processing',
-    printOptions: {
-      paperSize,
-      templateName: template.name,
-      rows: template.rows,
-      columns: template.columns,
-      marginMm: template.marginMm,
-      gapMm: template.gapMm,
-      dpi: DPI,
-      renderVersion: RENDER_VERSION,
-    },
+    // printOptions intentionally left unset — the template is only
+    // resolved once a layout is actually requested (see
+    // ensurePrintLayoutBuffer below).
   });
 
   await photo.save();
@@ -85,29 +79,10 @@ const createPhotoToDB = async (
 
     const singleImageUrl = result.data.idPhotoImage;
     const singleBuffer = await downloadImageAsBuffer(singleImageUrl);
-
-    // ---- Layout Engine takes over from here; the service does no math ----
-    const layout = calculateLayout(template, paperSize, sizeInfo, DPI);
-    const layoutBuffer = await renderLayout(singleBuffer, layout, { copiesToRender: copies });
-
     const singlePng = await downloadAndSaveProcessedImage(singleBuffer, userId, photoType, 'png');
-    const layoutPng = await downloadAndSaveProcessedImage(layoutBuffer, userId, photoType, 'layout');
-    const jpgUrl = await downloadAndSaveProcessedImage(layoutBuffer, userId, photoType, 'jpg');
-    const webpUrl = await downloadAndSaveProcessedImage(layoutBuffer, userId, photoType, 'webp');
-
-    // New: print-safe PDF, page size set to the exact physical paper size
-    // so any viewer/print dialog shows the correct paper automatically.
-    const pdfBuffer = await renderLayoutPdf(layoutBuffer, layout);
-    const pdfUrl = await downloadAndSavePdf(pdfBuffer, userId, photoType);
 
     photo.idPhotoImage = singlePng;
-    photo.printLayoutImage = layoutPng;
-
     photo.pngUrl = singlePng;
-    photo.jpgUrl = jpgUrl;
-    photo.webpUrl = webpUrl;
-    photo.pdfUrl = pdfUrl;
-
     photo.status = PHOTO_STATUS.SUCCESS;
     photo.creditsUsed = 1;
     photo.expiresAt = new Date(Date.now() + 30 * 60 * 1000);
@@ -122,57 +97,150 @@ const createPhotoToDB = async (
   }
 };
 
-const regeneratePrintLayoutLocal = async (
-  photoId: string,
-  newCopies: number | string,
-  paperSize: PAPER_SIZE = PAPER_SIZE.FOUR_R
-): Promise<PhotoDocument> => {
-  const parsedCopies = Number(newCopies);
-  if (!Number.isInteger(parsedCopies) || parsedCopies < 1) {
-    throw new Error('newCopies must be a positive integer');
+export interface LayoutOverride {
+  copies?: number;
+  paperSize?: PAPER_SIZE;
+}
+
+// ---------------------------------------------------------------------
+// Shared internal helper — used by print-layout, converter, and pdf.
+// Reuses the already-saved sheet (photo.printLayoutImage) if one exists
+// AND the caller didn't ask for different copies/paperSize; otherwise
+// resolves the template + (re)renders it and caches the result.
+//
+// This is what lets:
+//  - converter/pdf work even if the user never clicked "Print Layout" first
+//  - "Print Layout" / "Generate PDF" accept their own copies/paperSize
+//    on demand, instead of always using whatever was set at creation time
+// ---------------------------------------------------------------------
+const ensurePrintLayoutBuffer = async (
+  photo: PhotoDocument,
+  override?: LayoutOverride
+): Promise<{ layoutBuffer: Buffer; layout: LayoutResult }> => {
+  if (!photo.idPhotoImage) {
+    throw new Error('Base image not generated yet — call the create endpoint first');
   }
 
-  const photo = await Photo.findById(photoId);
-  if (!photo || !photo.idPhotoImage) throw new Error('Photo not found');
+  const requestedCopies = override?.copies ?? photo.copies!;
+  const requestedPaperSize = override?.paperSize ?? (photo.paperSize as PAPER_SIZE) ?? PAPER_SIZE.FOUR_R;
 
-  const singleImageFullPath = path.join(process.cwd(), photo.idPhotoImage.replace(/^\//, ''));
-  if (!fs.existsSync(singleImageFullPath)) throw new Error('Image file not found');
+  if (!Number.isInteger(requestedCopies) || requestedCopies < 1) {
+    throw new Error('copies must be a positive integer');
+  }
 
-  const singleBuffer = fs.readFileSync(singleImageFullPath);
+  // Resolve + validate the template up front — fails fast on an
+  // unsupported copies/paperSize/photoType combination.
+  const template = selectTemplate({ photoType: photo.photoType, paperSize: requestedPaperSize, copies: requestedCopies });
+  const layout = calculateLayout(template, requestedPaperSize, photo.sizeInfo, DPI);
 
-  const template = selectTemplate({
-    photoType: photo.photoType,
-    paperSize,
-    copies: parsedCopies,
-  });
+  const settingsChanged = requestedCopies !== photo.copies || requestedPaperSize !== photo.paperSize;
 
-  const layout = calculateLayout(template, paperSize, photo.sizeInfo, DPI);
-  const layoutBuffer = await renderLayout(singleBuffer, layout, { copiesToRender: parsedCopies });
+  // Reuse the cached sheet only if the requested settings match what's
+  // already saved.
+  if (!settingsChanged && photo.printLayoutImage) {
+    const layoutBuffer = readSavedFileBuffer(photo.printLayoutImage);
+    return { layoutBuffer, layout };
+  }
 
-  const savePath = await downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'layout');
+  const singleBuffer = readSavedFileBuffer(photo.idPhotoImage);
+  const layoutBuffer = await renderLayout(singleBuffer, layout, { copiesToRender: requestedCopies });
 
-  const pdfBuffer = await renderLayoutPdf(layoutBuffer, layout);
-  const pdfUrl = await downloadAndSavePdf(pdfBuffer, String(photo.userId), photo.photoType);
+  const layoutPng = await downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'layout');
 
-  photo.copies = parsedCopies;
-  photo.printLayoutImage = savePath;
-  photo.pdfUrl = pdfUrl;
+  photo.copies = requestedCopies;
+  photo.paperSize = requestedPaperSize;
+  photo.printLayoutImage = layoutPng;
   photo.printOptions = {
-    paperSize,
+    paperSize: requestedPaperSize,
     templateName: template.name,
     rows: template.rows,
     columns: template.columns,
     marginMm: template.marginMm,
     gapMm: template.gapMm,
+    orientation: template.orientation,
     dpi: DPI,
     renderVersion: RENDER_VERSION,
   };
 
+  // The sheet just changed — previously converted/pdf outputs no
+  // longer match it, so drop them. They'll be lazily rebuilt next time
+  // converter/pdf is called.
+  if (settingsChanged) {
+    photo.jpgUrl = '';
+    photo.webpUrl = '';
+    photo.pdfUrl = '';
+  }
+
   await photo.save();
+
+  return { layoutBuffer, layout };
+};
+
+// ---------------------------------------------------------------------
+// STEP 2 — "Print Layout" button. Composites the studio sheet (centered
+// grid) if it doesn't exist yet, and returns its URL. Independent of
+// converter/pdf.
+// ---------------------------------------------------------------------
+const generatePrintLayout = async (
+  photoId: string,
+  override?: LayoutOverride
+): Promise<PhotoDocument> => {
+  const photo = await Photo.findById(photoId);
+  if (!photo) throw new Error('Photo not found');
+
+  await ensurePrintLayoutBuffer(photo, override);
   return photo;
 };
 
+// ---------------------------------------------------------------------
+// STEP 3 — "Converter" button. Produces png/jpg/webp of the print
+// layout sheet. Independent of the pdf endpoint.
+// ---------------------------------------------------------------------
+const convertPrintLayout = async (
+  photoId: string,
+  override?: LayoutOverride
+): Promise<{ pngUrl: string; jpgUrl: string; webpUrl: string }> => {
+  const photo = await Photo.findById(photoId);
+  if (!photo) throw new Error('Photo not found');
+
+  const { layoutBuffer } = await ensurePrintLayoutBuffer(photo, override);
+
+  const [pngUrl, jpgUrl, webpUrl] = await Promise.all([
+    downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'png'),
+    downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'jpg'),
+    downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'webp'),
+  ]);
+
+  photo.jpgUrl = jpgUrl;
+  photo.webpUrl = webpUrl;
+  await photo.save();
+
+  return { pngUrl, jpgUrl, webpUrl };
+};
+
+// ---------------------------------------------------------------------
+// STEP 4 — "Generate PDF" button. Independent of converter/print-layout.
+// ---------------------------------------------------------------------
+const generatePdf = async (photoId: string, override?: LayoutOverride): Promise<string> => {
+  const photo = await Photo.findById(photoId);
+  if (!photo) throw new Error('Photo not found');
+
+  const { layoutBuffer, layout } = await ensurePrintLayoutBuffer(photo, override);
+
+  const pdfBuffer = await renderLayoutPdf(layoutBuffer, layout);
+  const pdfUrl = await downloadAndSavePdf(pdfBuffer, String(photo.userId), photo.photoType);
+
+  photo.pdfUrl = pdfUrl;
+  await photo.save();
+
+  return pdfUrl;
+};
+
+
+
 export const PhotoServices = {
   createPhotoToDB,
-  regeneratePrintLayoutLocal,
+  generatePrintLayout,
+  convertPrintLayout,
+  generatePdf,
 };

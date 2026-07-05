@@ -54,6 +54,20 @@ export const downloadAndSaveProcessedImage = async (
 };
 
 /**
+ * Reads back a previously-saved output file (by its stored public URL,
+ * e.g. photo.printLayoutImage) as a Buffer. Used by the lazy print-layout /
+ * converter / pdf endpoints so they can reuse an already-rendered layout
+ * instead of re-compositing it from scratch every time.
+ */
+export const readSavedFileBuffer = (publicUrl: string): Buffer => {
+  const fullPath = path.join(process.cwd(), publicUrl.replace(/^\//, ''));
+  if (!fs.existsSync(fullPath)) {
+    throw new Error(`Saved file not found on disk: ${publicUrl}`);
+  }
+  return fs.readFileSync(fullPath);
+};
+
+/**
  * Saves a PDF buffer using the same folder/URL convention as
  * downloadAndSaveProcessedImage, so the returned link works exactly
  * like the existing png/jpg/webp links — visiting it opens the PDF.

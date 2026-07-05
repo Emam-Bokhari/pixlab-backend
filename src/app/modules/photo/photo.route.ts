@@ -1,10 +1,10 @@
-import express from 'express';
+import { Router } from 'express';
 import { PhotoControllers } from './photo.controller';
 import { isAuthenticated } from '../../helpers/auth.helper';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import { parseFileData } from '../../middlewares/parseFileData';
 
-const router = express.Router();
+const router = Router();
 
 router.route('/').post(
   isAuthenticated,
@@ -15,10 +15,12 @@ router.route('/').post(
   }),PhotoControllers.createPhoto,
 );
 
-router.route('/:id').post(
-  isAuthenticated,
-  PhotoControllers.regeneratePrintLayout,
-);
+
+router.post('/:photoId/print-layout', PhotoControllers.generatePrintLayout);
+
+router.post('/:photoId/convert', PhotoControllers.convertPrintLayout);
+
+router.post('/:photoId/pdf', PhotoControllers.generatePdf);
 
 
 
