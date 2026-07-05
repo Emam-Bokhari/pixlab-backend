@@ -160,10 +160,30 @@ const generatePdf = catchAsync(async (req, res) => {
   });
 });
 
+// ---------------------------------------------------------------------
+// PATCH /photos/:photoId/regenerate
+// Changes copies/paperSize and invalidates previously rendered outputs.
+// Client should call print-layout/converter/pdf again afterwards to
+// get the regenerated files.
+// ---------------------------------------------------------------------
+const regeneratePrintLayout = catchAsync(async (req, res) => {
+  const { photoId } = req.params as { photoId: string };
+  const { copies, paperSize } = req.body;
+
+  const result = await PhotoServices.regeneratePrintLayoutLocal(photoId, copies, paperSize);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Copies/paper size updated successfully. Regenerate print-layout/converter/pdf to get fresh files.',
+    data: result,
+  });
+});
 
 export const PhotoControllers = {
   createPhoto,
   generatePrintLayout,
   convertPrintLayout,
   generatePdf,
+  regeneratePrintLayout,
 };

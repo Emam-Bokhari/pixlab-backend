@@ -1,5 +1,6 @@
 import axios from 'axios';
 import fs from 'fs';
+import path from 'path';
 import { Photo } from './photo.model';
 import { bufferToBase64, downloadImageAsBuffer, downloadAndSaveProcessedImage, downloadAndSavePdf, readSavedFileBuffer } from './photo.utils';
 import { PAPER_SIZE, PHOTO_STATUS } from './photo.constant';
@@ -236,11 +237,47 @@ const generatePdf = async (photoId: string, override?: LayoutOverride): Promise<
   return pdfUrl;
 };
 
+// ---------------------------------------------------------------------
+// Change copies/paperSize after the fact. Invalidates previously
+// rendered outputs (they no longer match) instead of eagerly
+// re-rendering everything — the next print-layout/converter/pdf call
+// will lazily regenerate from the new settings.
+// ---------------------------------------------------------------------
+const regeneratePrintLayoutLocal = async (
+  photoId: string,
+  newCopies: number | string,
+  paperSize?: PAPER_SIZE
+): Promise<PhotoDocument> => {
+  const parsedCopies = Number(newCopies);
+  if (!Number.isInteger(parsedCopies) || parsedCopies < 1) {
+    throw new Error('newCopies must be a positive integer');
+  }
 
+  const photo = await Photo.findById(photoId);
+  if (!photo || !photo.idPhotoImage) throw new Error('Photo not found or base image not generated yet');
+
+  const resolvedPaperSize = paperSize ?? (photo.paperSize as PAPER_SIZE) ?? PAPER_SIZE.FOUR_R;
+
+  // Validate the new combination has a real template before committing —
+  // fail fast instead of silently keeping stale/mismatched output.
+  selectTemplate({ photoType: photo.photoType, paperSize: resolvedPaperSize, copies: parsedCopies });
+
+  photo.copies = parsedCopies;
+  photo.paperSize = resolvedPaperSize;
+  photo.printLayoutImage = undefined;
+  photo.jpgUrl = '';
+  photo.webpUrl = '';
+  photo.pdfUrl = '';
+  photo.printOptions = undefined;
+
+  await photo.save();
+  return photo;
+};
 
 export const PhotoServices = {
   createPhotoToDB,
   generatePrintLayout,
   convertPrintLayout,
   generatePdf,
+  regeneratePrintLayoutLocal,
 };
