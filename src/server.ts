@@ -71,6 +71,10 @@ async function main() {
     // seed admin
     await seedSuperAdmin();
 
+    // seed default credit settings
+    const { CreditSettingServices } = require('./app/modules/creditSetting/creditSetting.service');
+    await CreditSettingServices.seedDefaultCreditSettings();
+
     // create HTTP server
     server = http.createServer(app);
 

@@ -13,6 +13,7 @@ import { PhotoRoutes } from '../modules/photo/photo.route';
 import { UpscaleRoutes } from '../modules/upscale/upscale.route';
 import { PaymentRoutes } from '../modules/payment/payment.route';
 import { WalletRoutes } from '../modules/wallet/wallet.route';
+import { CreditSettingRoutes } from '../modules/creditSetting/creditSetting.route';
 
 const v1Router = express.Router();
 
@@ -72,6 +73,10 @@ const apiRoutes = [
   {
     path: '/wallets',
     route: WalletRoutes,
+  },
+  {
+    path: '/credit-settings',
+    route: CreditSettingRoutes,
   }
 ];
 
