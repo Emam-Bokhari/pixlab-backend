@@ -1,4 +1,5 @@
 import { HydratedDocument, Types } from 'mongoose';
+import { UPSCALE_STATUS } from './upscale.constant';
 
 export interface ImageDimensionInfo {
   widthPx: number;
@@ -15,15 +16,21 @@ export interface UpscaleIncreaseInfo {
   sizeMBDiff: number;
 }
 
-export interface IUpscale {
+export interface TUpscale {
   userId: Types.ObjectId;
   originalImage: string;
-  upscaledImageUrl: string;
-  original: ImageDimensionInfo;
-  upscaled: ImageDimensionInfo;
-  increase: UpscaleIncreaseInfo;
-  createdAt?: Date;
-  updatedAt?: Date;
+  upscaledImage?: string;
+
+  original?: ImageDimensionInfo;
+  upscaled?: ImageDimensionInfo;
+  increase?: UpscaleIncreaseInfo;
+  didUpscale?: boolean;
+  warning?: string;
+
+  status: UPSCALE_STATUS;
+  errorMessage?: string;
+  creditsUsed?: number;
+
+  createdAt: Date;
 }
 
-export type UpscaleDocument = HydratedDocument<IUpscale>;

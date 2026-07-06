@@ -3,26 +3,20 @@ import { UpscaleControllers } from './upscale.controller';
 import { isAuthenticated } from '../../helpers/auth.helper';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import { parseFileData } from '../../middlewares/parseFileData';
-import { requireCredits } from '../../middlewares/creditCheck.middleware';
 
 const router = Router();
 
-router.post(
-  '/',
-  isAuthenticated,
-  requireCredits('upscale'),
-  fileUploadHandler(),
-  parseFileData({
-    fieldName: 'image',
-    mode: 'single',
-  }),
-  UpscaleControllers.upscalePhoto,
-);
-
-router.get(
-  '/',
-  isAuthenticated,
-  UpscaleControllers.getAllUpscaledImages,
-);
+router
+  .route('/')
+  .post(
+    isAuthenticated,
+    fileUploadHandler(),
+    parseFileData({
+      fieldName: 'image',
+      mode: 'single',
+    }),
+    UpscaleControllers.upscalePhoto,
+  )
+  .get(isAuthenticated, UpscaleControllers.getAllUpscales);
 
 export const UpscaleRoutes = router;

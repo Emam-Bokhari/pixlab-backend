@@ -1,59 +1,29 @@
-import mongoose, { Schema, model } from "mongoose";
-import { IUpscale } from "./upscale.interface";
+import mongoose, { Schema } from 'mongoose';
+import { UPSCALE_STATUS } from './upscale.constant';
+import { TUpscale } from './upscale.interface';
 
-const imageDimensionInfoSchema = new Schema(
+const dimensionInfoSchema = new Schema(
   {
-    widthPx: {
-      type: Number,
-      required: true,
-    },
-    heightPx: {
-      type: Number,
-      required: true,
-    },
-    sizeBytes: {
-      type: Number,
-      required: true,
-    },
-    sizeKB: {
-      type: Number,
-      required: true,
-    },
-    sizeMB: {
-      type: Number,
-      required: true,
-    },
+    widthPx: { type: Number, required: true },
+    heightPx: { type: Number, required: true },
+    sizeBytes: { type: Number, required: true },
+    sizeKB: { type: Number, required: true },
+    sizeMB: { type: Number, required: true },
   },
-  {
-    _id: false,
-  }
+  { _id: false },
 );
 
-const upscaleIncreaseInfoSchema = new Schema(
+const increaseInfoSchema = new Schema(
   {
-    widthPercent: {
-      type: Number,
-      required: true,
-    },
-    heightPercent: {
-      type: Number,
-      required: true,
-    },
-    sizeBytesPercent: {
-      type: Number,
-      required: true,
-    },
-    sizeMBDiff: {
-      type: Number,
-      required: true,
-    },
+    widthPercent: { type: Number, required: true },
+    heightPercent: { type: Number, required: true },
+    sizeBytesPercent: { type: Number, required: true },
+    sizeMBDiff: { type: Number, required: true },
   },
-  {
-    _id: false,
-  }
+  { _id: false },
 );
 
-const upscaleSchema = new Schema<IUpscale>(
+const upscaleSchema = new Schema<TUpscale>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -64,36 +34,58 @@ const upscaleSchema = new Schema<IUpscale>(
     originalImage: {
       type: String,
       required: true,
-      trim: true,
     },
 
-    upscaledImageUrl: {
+    upscaledImage: {
       type: String,
-      required: true,
-      trim: true,
     },
 
     original: {
-      type: imageDimensionInfoSchema,
-      required: true,
+      type: dimensionInfoSchema,
     },
 
     upscaled: {
-      type: imageDimensionInfoSchema,
-      required: true,
+      type: dimensionInfoSchema,
     },
 
     increase: {
-      type: upscaleIncreaseInfoSchema,
-      required: true,
+      type: increaseInfoSchema,
+    },
+
+    didUpscale: {
+      type: Boolean,
+    },
+
+    warning: {
+      type: String,
+    },
+
+    status: {
+      type: String,
+      enum: UPSCALE_STATUS,
+      default: UPSCALE_STATUS.PENDING,
+    },
+
+    errorMessage: {
+      type: String,
+    },
+
+    creditsUsed: {
+      type: Number,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 upscaleSchema.index({ userId: 1, createdAt: -1 });
+upscaleSchema.index({ status: 1 });
 
-export const Upscale = model<IUpscale>('Upscale', upscaleSchema);
+export const Upscale = mongoose.model<TUpscale>('Upscale', upscaleSchema);

@@ -17,10 +17,10 @@ const upscalePhoto = catchAsync(async (req, res) => {
   });
 });
 
-const getAllUpscaledImages = catchAsync(async (req, res) => {
+const getAllUpscales = catchAsync(async (req, res) => {
   const { id: userId } = req.user as { id: string };
 
-  const result = await UpscaleServices.getAllUpscaledImagesForUser(userId);
+  const result = await UpscaleServices.getAllUpscalesForUser(userId);
 
   sendResponse(res, {
     success: true,
@@ -32,5 +32,5 @@ const getAllUpscaledImages = catchAsync(async (req, res) => {
 
 export const UpscaleControllers = {
   upscalePhoto,
-  getAllUpscaledImages,
+  getAllUpscales,
 };
