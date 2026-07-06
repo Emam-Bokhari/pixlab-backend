@@ -12,6 +12,7 @@ import { renderLayout } from './layouts/layouts.renderLayout';
 import { renderLayoutPdf } from './pdf/pdf.renderPdf';
 import { LayoutResult } from './layouts/layouts.type';
 import { HttpError } from '../../errors/HttpError';
+import { photoQueue } from '../../../queues';
 
 // ---------------------------------------------------------------------
 // STEP 1 — base endpoint. Only talks to Cutout Pro and saves the single
@@ -115,7 +116,7 @@ export interface LayoutOverride {
 //  - "Print Layout" / "Generate PDF" accept their own copies/paperSize
 //    on demand, instead of always using whatever was set at creation time
 // ---------------------------------------------------------------------
-const ensurePrintLayoutBuffer = async (
+export const ensurePrintLayoutBuffer = async (
   photo: PhotoDocument,
   override?: LayoutOverride
 ): Promise<{ layoutBuffer: Buffer; layout: LayoutResult }> => {
@@ -197,7 +198,18 @@ const generatePrintLayout = async (
   
   if (String(photo.userId) !== userId) throw new HttpError(403, 'Not authorized to access this photo');
 
+  const originalCopies = photo.copies;
+  const originalPaperSize = photo.paperSize;
+
   await ensurePrintLayoutBuffer(photo, override);
+
+  const settingsChanged = (override?.copies !== undefined && override.copies !== originalCopies) || 
+                         (override?.paperSize !== undefined && override.paperSize !== originalPaperSize);
+
+  if (settingsChanged) {
+    await photoQueue.add('regenerateFormats', { photoId, userId });
+  }
+
   return photo;
 };
 
@@ -241,10 +253,25 @@ const generatePdf = async (photoId: string, userId: string, override?: LayoutOve
   
   if (String(photo.userId) !== userId) throw new HttpError(403, 'Not authorized to access this photo');
 
+  const originalCopies = photo.copies;
+  const originalPaperSize = photo.paperSize;
+
   const { layoutBuffer, layout } = await ensurePrintLayoutBuffer(photo, override);
+
+  const settingsChanged = (override?.copies !== undefined && override.copies !== originalCopies) || 
+                         (override?.paperSize !== undefined && override.paperSize !== originalPaperSize);
 
   const pdfBuffer = await renderLayoutPdf(layoutBuffer, layout);
   const pdfUrl = await downloadAndSavePdf(pdfBuffer, String(photo.userId), photo.photoType);
+
+  if (settingsChanged || !photo.jpgUrl || !photo.webpUrl) {
+    const [jpgUrl, webpUrl] = await Promise.all([
+      downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'jpg'),
+      downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'webp'),
+    ]);
+    photo.jpgUrl = jpgUrl;
+    photo.webpUrl = webpUrl;
+  }
 
   photo.pdfUrl = pdfUrl;
   await photo.save();
@@ -285,12 +312,12 @@ const regeneratePrintLayoutLocal = async (
   photo.copies = parsedCopies;
   photo.paperSize = resolvedPaperSize;
   photo.printLayoutImage = undefined;
-  photo.jpgUrl = '';
-  photo.webpUrl = '';
-  photo.pdfUrl = '';
   photo.printOptions = undefined;
 
   await photo.save();
+
+  await photoQueue.add('regenerateFormats', { photoId, userId });
+
   return photo;
 };
 
