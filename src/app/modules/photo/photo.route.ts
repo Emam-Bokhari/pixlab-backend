@@ -13,6 +13,9 @@ router.route('/').post(
     fieldName: 'originalImage',
     mode: 'single',
   }),PhotoControllers.createPhoto,
+).get(
+  isAuthenticated,
+  PhotoControllers.getAllPhotos,
 );
 
 router.post('/:photoId/print-layout', isAuthenticated, PhotoControllers.generatePrintLayout);

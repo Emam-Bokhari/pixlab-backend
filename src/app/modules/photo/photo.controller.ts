@@ -188,10 +188,24 @@ const regeneratePrintLayout = catchAsync(async (req, res) => {
   });
 });
 
+const getAllPhotos = catchAsync(async (req, res) => {
+  const { id: userId } = req.user as { id: string };
+
+  const result = await PhotoServices.getAllPhotosForUser(userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Photos retrieved successfully',
+    data: result,
+  });
+});
+
 export const PhotoControllers = {
   createPhoto,
   generatePrintLayout,
   convertPrintLayout,
   generatePdf,
   regeneratePrintLayout,
+  getAllPhotos,
 };
