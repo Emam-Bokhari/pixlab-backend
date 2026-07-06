@@ -1,5 +1,6 @@
 import axios from 'axios';
 import fs from 'fs';
+import sharp from 'sharp';
 import { Photo } from './photo.model';
 import { bufferToBase64, downloadImageAsBuffer, downloadAndSaveProcessedImage, downloadAndSavePdf, readSavedFileBuffer } from './photo.utils';
 import { PAPER_SIZE, PHOTO_STATUS } from './photo.constant';
@@ -32,6 +33,29 @@ const createPhotoToDB = async (
 
   if (!file) throw new HttpError(400, 'No file provided');
 
+  // Validate Cutout Pro config is present
+  if (!config.cutout_pro_api_url || !config.cutout_pro_api_key) {
+    throw new HttpError(500, 'Cutout Pro configuration is missing');
+  }
+
+  // Validate image
+  let buffer: Buffer;
+  if (file.buffer) buffer = file.buffer;
+  else if (file.path) buffer = fs.readFileSync(file.path);
+  else throw new Error('File buffer not found');
+
+  try {
+    const metadata = await sharp(buffer).metadata();
+    
+    // Check format
+    const allowedFormats = ['png', 'jpeg', 'jpg', 'webp', 'bmp'];
+    if (!metadata.format || !allowedFormats.includes(metadata.format.toLowerCase())) {
+      throw new Error('Unsupported image format');
+    }
+  } catch (err: any) {
+    throw new HttpError(400, err.message || 'Invalid or unsupported image file');
+  }
+
   const photo = new Photo({
     userId,
     originalImage,
@@ -41,7 +65,7 @@ const createPhotoToDB = async (
     bgColor,
     copies,
     paperSize,
-    status: 'processing',
+    status: PHOTO_STATUS.PENDING,
     // printOptions intentionally left unset — the template is only
     // resolved once a layout is actually requested (see
     // ensurePrintLayoutBuffer below).
@@ -49,10 +73,41 @@ const createPhotoToDB = async (
 
   await photo.save();
 
+  // Enqueue background job for processing
+  await photoQueue.add('processPhoto', {
+    photoId: photo._id,
+    userId,
+    bgColor,
+    sizeInfo,
+    filePath: file.path || null,
+  });
+
+  return photo;
+};
+
+// Background processing function for Cutout Pro
+export const processPhoto = async (
+  photoId: string,
+  userId: string,
+  bgColor: string,
+  sizeInfo: { name: string; mmWidth: number; mmHeight: number },
+  filePath: string | null
+) => {
+  const photo = await Photo.findById(photoId);
+  if (!photo) {
+    throw new Error('Photo not found');
+  }
+  photo.status = PHOTO_STATUS.PROCESSING;
+  await photo.save();
+
   let buffer: Buffer;
-  if (file.buffer) buffer = file.buffer;
-  else if (file.path) buffer = fs.readFileSync(file.path);
-  else throw new Error('File buffer not found');
+  if (filePath) {
+    buffer = fs.readFileSync(filePath);
+  } else {
+    // If buffer wasn't saved, but we have originalImage, maybe?
+    // Well, file should have been saved via multer, so filePath should exist
+    throw new Error('File not found');
+  }
 
   const base64Image = bufferToBase64(buffer);
   const cleanBgColor = (bgColor || 'FFFFFF').replace('#', '').toUpperCase();
@@ -82,7 +137,7 @@ const createPhotoToDB = async (
 
     const singleImageUrl = result.data.idPhotoImage;
     const singleBuffer = await downloadImageAsBuffer(singleImageUrl);
-    const singlePng = await downloadAndSaveProcessedImage(singleBuffer, userId, photoType, 'png');
+    const singlePng = await downloadAndSaveProcessedImage(singleBuffer, userId, photo.photoType, 'png');
 
     photo.idPhotoImage = singlePng;
     photo.pngUrl = singlePng;
@@ -91,7 +146,6 @@ const createPhotoToDB = async (
     photo.expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
     await photo.save();
-    return photo;
   } catch (error: any) {
     photo.status = PHOTO_STATUS.FAILED;
     photo.errorMessage = error.message;
