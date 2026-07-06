@@ -41,6 +41,12 @@ const seedDefaultCreditSettings = async () => {
       displayName: 'Clothes Change',
       description: 'Credit cost for changing clothes/suits in photos',
     },
+    {
+      key: 'reduce',
+      credits: 1,
+      displayName: 'Photo Size Reduction',
+      description: 'Credit cost for reducing photo file size (KB/MB)',
+    },
   ];
 
   for (const item of defaults) {
