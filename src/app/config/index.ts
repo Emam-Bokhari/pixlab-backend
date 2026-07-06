@@ -12,7 +12,6 @@ export default {
   support_email: process.env.SUPPORT_EMAIL,
   max_otp_attempts: process.env.MAX_OTP_ATTEMPTS,
   frontend_url: process.env.FRONTEND_URL,
-
   redis: {
     redis_host: process.env.REDIS_HOST,
     redis_port: process.env.REDIS_PORT,
@@ -36,6 +35,13 @@ export default {
     jwt_expire_in: process.env.JWT_EXPIRE_IN,
     jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
     jwt_refresh_expire_in: process.env.JWT_REFRESH_EXPIRE_IN,
+  },
+  uddoktapay: {
+    api_key: process.env.UDDOKTAPAY_API_KEY,
+    base_url: process.env.UDDOKTAPAY_BASE_URL,
+    redirect_url: process.env.UDDOKTAPAY_REDIRECT_URL,
+    cancel_url: process.env.UDDOKTAPAY_CANCEL_URL,
+    webhook_url: process.env.UDDOKTAPAY_WEBHOOK_URL,
   },
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
   otp_salt_rounds: process.env.OTP_SALT_ROUNDS,

@@ -79,7 +79,21 @@ const paymentSchema = new Schema<IPayment>(
 
 paymentSchema.index({ userId: 1, createdAt: -1 });
 paymentSchema.index({ status: 1 });
-paymentSchema.index({ gateway: 1, gatewayInvoiceId: 1 }, { unique: true, sparse: true });
-paymentSchema.index({ gateway: 1, gatewayTransactionId: 1 }, { unique: true, sparse: true });
+// Only enforce uniqueness once the gateway assigns a real id — many
+// pending/failed attempts can coexist with gatewayInvoiceId unset.
+paymentSchema.index(
+  { gateway: 1, gatewayInvoiceId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { gatewayInvoiceId: { $exists: true, $gt: '' } },
+  }
+);
+paymentSchema.index(
+  { gateway: 1, gatewayTransactionId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { gatewayTransactionId: { $exists: true, $gt: '' } },
+  }
+);
 
 export const Payment = mongoose.model<IPayment>('Payment', paymentSchema);
