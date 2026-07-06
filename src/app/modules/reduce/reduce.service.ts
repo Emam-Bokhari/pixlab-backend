@@ -8,14 +8,19 @@ import { compressImageToTargetSize, saveReducedImage, getImageSizeInfo } from '.
 import { WalletServices } from '../wallet/wallet.service';
 import { User } from '../user/user.model';
 
+import path from 'path';
+
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
 
 const reduceImageSize = async (
   userId: string,
-  targetSizeKb: number,
-  file?: Express.Multer.File
+  data: { targetSizeKb: number; image: string }
 ): Promise<ReduceDocument> => {
-  if (!file) throw new HttpError(400, 'No file provided');
+  const { targetSizeKb, image } = data;
+
+  if (!image) {
+    throw new HttpError(400, 'No image path provided');
+  }
 
   // Check user exists
   const user = await User.findById(userId);
@@ -23,11 +28,13 @@ const reduceImageSize = async (
     throw new HttpError(404, 'User not found');
   }
 
+  const filePath = path.join(process.cwd(), image);
+  if (!fs.existsSync(filePath)) {
+    throw new HttpError(404, 'Uploaded image file not found on server');
+  }
+
   // Read buffer
-  let buffer: Buffer;
-  if (file.buffer) buffer = file.buffer;
-  else if (file.path) buffer = fs.readFileSync(file.path);
-  else throw new HttpError(400, 'File buffer not found');
+  const buffer = fs.readFileSync(filePath);
 
   // Validate format using sharp
   let metadata;
@@ -70,19 +77,19 @@ const reduceImageSize = async (
   // Save to database
   const reduceRecord = new Reduce({
     userId: new mongoose.Types.ObjectId(userId),
-    originalImageName: file.originalname || 'image',
+    originalImageName: path.basename(image),
     reducedImageUrl,
     original: originalInfo,
     reduced: reducedInfo,
     reductionPercentage,
     targetSizeKb,
-    format: compressionResult.format,
+    format: compressionResult.format === 'jpeg' ? 'jpg' : compressionResult.format,
   });
 
   await reduceRecord.save();
 
   // Deduct credits for the reduce operation
-  await WalletServices.deductCreditsForOperation(userId, 'reduce');
+  // await WalletServices.deductCreditsForOperation(userId, 'reduce');
 
   return reduceRecord;
 };

@@ -12,7 +12,7 @@ const router = Router();
 router.post(
   '/',
   isAuthenticated,
-  requireCredits('reduce'),
+  // requireCredits('reduce'),
   fileUploadHandler(),
   parseFileData({
     fieldName: 'image',

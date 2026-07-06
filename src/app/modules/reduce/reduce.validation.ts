@@ -6,6 +6,7 @@ const reduceImageZodSchema = z.object({
       (val) => Number(val),
       z.number().positive('Target size must be a positive number')
     ),
+    image: z.string().min(1, 'Image path is required'),
   }),
 });
 

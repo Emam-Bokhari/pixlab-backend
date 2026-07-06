@@ -4,9 +4,9 @@ import { ReduceServices } from './reduce.service';
 
 const reducePhoto = catchAsync(async (req, res) => {
   const userId = (req as any).user?.id;
-  const { targetSizeKb } = req.body;
+  const data=req.body;
 
-  const result = await ReduceServices.reduceImageSize(userId, targetSizeKb, req.file);
+  const result = await ReduceServices.reduceImageSize(userId, data);
 
   sendResponse(res, {
     statusCode: 200,
