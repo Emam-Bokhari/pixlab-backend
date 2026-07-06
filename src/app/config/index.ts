@@ -44,4 +44,5 @@ export default {
   default_email_from: process.env.DEFAULT_EMAIL_FROM,
   cutout_pro_api_key: process.env.CUTOUT_PRO_API_KEY,
   cutout_pro_api_url: process.env.CUTOUT_PRO_API_URL,
+  cutout_pro_upscale_api_url: process.env.CUTOUT_PRO_UPSCALE_API_URL,
 };

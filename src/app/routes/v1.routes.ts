@@ -10,6 +10,7 @@ import { ChatRoutes } from '../modules/chat/chat.route';
 import { MessageRoutes } from '../modules/message/message.route';
 import { FcmTokenRoutes } from '../modules/fcmToken/fcmToken.route';
 import { PhotoRoutes } from '../modules/photo/photo.route';
+import { UpscaleRoutes } from '../modules/upscale/upscale.route';
 
 const v1Router = express.Router();
 
@@ -57,6 +58,10 @@ const apiRoutes = [
   {
     path: '/photos',
     route: PhotoRoutes,
+  },
+  {
+    path: '/upscales',
+    route: UpscaleRoutes,
   },
 ];
 
