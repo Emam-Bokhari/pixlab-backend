@@ -15,12 +15,12 @@ router.route('/').post(
   }),PhotoControllers.createPhoto,
 );
 
-router.post('/:photoId/print-layout', PhotoControllers.generatePrintLayout);
+router.post('/:photoId/print-layout', isAuthenticated, PhotoControllers.generatePrintLayout);
 
-router.post('/:photoId/convert', PhotoControllers.convertPrintLayout);
+router.post('/:photoId/convert', isAuthenticated, PhotoControllers.convertPrintLayout);
 
-router.post('/:photoId/pdf', PhotoControllers.generatePdf);
+router.post('/:photoId/pdf', isAuthenticated, PhotoControllers.generatePdf);
 
-router.patch('/:photoId/regenerate', PhotoControllers.regeneratePrintLayout);
+router.patch('/:photoId/regenerate', isAuthenticated, PhotoControllers.regeneratePrintLayout);
 
 export const PhotoRoutes = router;

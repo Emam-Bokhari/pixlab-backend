@@ -1,6 +1,5 @@
 import axios from 'axios';
 import fs from 'fs';
-import path from 'path';
 import { Photo } from './photo.model';
 import { bufferToBase64, downloadImageAsBuffer, downloadAndSaveProcessedImage, downloadAndSavePdf, readSavedFileBuffer } from './photo.utils';
 import { PAPER_SIZE, PHOTO_STATUS } from './photo.constant';
@@ -12,6 +11,7 @@ import { calculateLayout } from './layouts/layouts.layoutEngine';
 import { renderLayout } from './layouts/layouts.renderLayout';
 import { renderLayoutPdf } from './pdf/pdf.renderPdf';
 import { LayoutResult } from './layouts/layouts.type';
+import { HttpError } from '../../errors/HttpError';
 
 // ---------------------------------------------------------------------
 // STEP 1 — base endpoint. Only talks to Cutout Pro and saves the single
@@ -26,9 +26,10 @@ const createPhotoToDB = async (
   userId: string,
   file?: Express.Multer.File
 ): Promise<PhotoDocument> => {
+
   const { originalImage, photoType, bgColor = 'FFFFFF', copies = 1, sizeInfo, paperSize = PAPER_SIZE.FOUR_R } = data;
 
-  if (!file) throw new Error('No file provided');
+  if (!file) throw new HttpError(400, 'No file provided');
 
   const photo = new Photo({
     userId,
@@ -118,20 +119,23 @@ const ensurePrintLayoutBuffer = async (
   photo: PhotoDocument,
   override?: LayoutOverride
 ): Promise<{ layoutBuffer: Buffer; layout: LayoutResult }> => {
+
   if (!photo.idPhotoImage) {
-    throw new Error('Base image not generated yet — call the create endpoint first');
+    throw new HttpError(400, 'Base image not generated yet — call the create endpoint first');
   }
 
   const requestedCopies = override?.copies ?? photo.copies!;
+
   const requestedPaperSize = override?.paperSize ?? (photo.paperSize as PAPER_SIZE) ?? PAPER_SIZE.FOUR_R;
 
   if (!Number.isInteger(requestedCopies) || requestedCopies < 1) {
-    throw new Error('copies must be a positive integer');
+    throw new HttpError(400, 'copies must be a positive integer');
   }
 
   // Resolve + validate the template up front — fails fast on an
   // unsupported copies/paperSize/photoType combination.
   const template = selectTemplate({ photoType: photo.photoType, paperSize: requestedPaperSize, copies: requestedCopies });
+
   const layout = calculateLayout(template, requestedPaperSize, photo.sizeInfo, DPI);
 
   const settingsChanged = requestedCopies !== photo.copies || requestedPaperSize !== photo.paperSize;
@@ -184,10 +188,14 @@ const ensurePrintLayoutBuffer = async (
 // ---------------------------------------------------------------------
 const generatePrintLayout = async (
   photoId: string,
+  userId: string,
   override?: LayoutOverride
 ): Promise<PhotoDocument> => {
   const photo = await Photo.findById(photoId);
-  if (!photo) throw new Error('Photo not found');
+
+  if (!photo || !photo.idPhotoImage) throw new HttpError(404, 'Photo not found or base image not generated yet');
+  
+  if (String(photo.userId) !== userId) throw new HttpError(403, 'Not authorized to access this photo');
 
   await ensurePrintLayoutBuffer(photo, override);
   return photo;
@@ -199,10 +207,14 @@ const generatePrintLayout = async (
 // ---------------------------------------------------------------------
 const convertPrintLayout = async (
   photoId: string,
+  userId: string,
   override?: LayoutOverride
 ): Promise<{ pngUrl: string; jpgUrl: string; webpUrl: string }> => {
   const photo = await Photo.findById(photoId);
-  if (!photo) throw new Error('Photo not found');
+
+  if (!photo || !photo.idPhotoImage) throw new HttpError(404, 'Photo not found or base image not generated yet');
+
+  if (String(photo.userId) !== userId) throw new HttpError(403, 'Not authorized to access this photo');
 
   const { layoutBuffer } = await ensurePrintLayoutBuffer(photo, override);
 
@@ -222,9 +234,12 @@ const convertPrintLayout = async (
 // ---------------------------------------------------------------------
 // STEP 4 — "Generate PDF" button. Independent of converter/print-layout.
 // ---------------------------------------------------------------------
-const generatePdf = async (photoId: string, override?: LayoutOverride): Promise<string> => {
+const generatePdf = async (photoId: string, userId: string, override?: LayoutOverride): Promise<string> => {
   const photo = await Photo.findById(photoId);
-  if (!photo) throw new Error('Photo not found');
+
+  if (!photo || !photo.idPhotoImage) throw new HttpError(404, 'Photo not found or base image not generated yet');
+  
+  if (String(photo.userId) !== userId) throw new HttpError(403, 'Not authorized to access this photo');
 
   const { layoutBuffer, layout } = await ensurePrintLayoutBuffer(photo, override);
 
@@ -245,16 +260,21 @@ const generatePdf = async (photoId: string, override?: LayoutOverride): Promise<
 // ---------------------------------------------------------------------
 const regeneratePrintLayoutLocal = async (
   photoId: string,
+  userId: string,
   newCopies: number | string,
   paperSize?: PAPER_SIZE
 ): Promise<PhotoDocument> => {
   const parsedCopies = Number(newCopies);
+
   if (!Number.isInteger(parsedCopies) || parsedCopies < 1) {
-    throw new Error('newCopies must be a positive integer');
+    throw new HttpError(400, 'newCopies must be a positive integer');
   }
 
   const photo = await Photo.findById(photoId);
-  if (!photo || !photo.idPhotoImage) throw new Error('Photo not found or base image not generated yet');
+
+  if (!photo || !photo.idPhotoImage) throw new HttpError(404, 'Photo not found or base image not generated yet');
+
+  if (String(photo.userId) !== userId) throw new HttpError(403, 'Not authorized to access this photo');
 
   const resolvedPaperSize = paperSize ?? (photo.paperSize as PAPER_SIZE) ?? PAPER_SIZE.FOUR_R;
 

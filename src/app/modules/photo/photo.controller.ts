@@ -112,10 +112,12 @@ const createPhoto = catchAsync(async (req, res) => {
 // doesn't already exist, and returns the updated photo doc.
 // ---------------------------------------------------------------------
 const generatePrintLayout = catchAsync(async (req, res) => {
+  const { id: userId } = req.user as { id: string };
+
   const { photoId } = req.params as { photoId: string };
   const { copies, paperSize } = req.body;
 
-  const result = await PhotoServices.generatePrintLayout(photoId, { copies, paperSize });
+  const result = await PhotoServices.generatePrintLayout(photoId, userId, { copies, paperSize });
 
   sendResponse(res, {
     success: true,
@@ -130,9 +132,11 @@ const generatePrintLayout = catchAsync(async (req, res) => {
 // "Converter" button — png/jpg/webp of the print layout sheet.
 // ---------------------------------------------------------------------
 const convertPrintLayout = catchAsync(async (req, res) => {
+  const { id: userId } = req.user as { id: string };
+
   const { photoId } = req.params as { photoId: string };
 
-  const result = await PhotoServices.convertPrintLayout(photoId);
+  const result = await PhotoServices.convertPrintLayout(photoId, userId);
 
   sendResponse(res, {
     success: true,
@@ -147,10 +151,12 @@ const convertPrintLayout = catchAsync(async (req, res) => {
 // "Generate PDF" button.
 // ---------------------------------------------------------------------
 const generatePdf = catchAsync(async (req, res) => {
+  const { id: userId } = req.user as { id: string };
+
   const { photoId } = req.params as { photoId: string };
   const { copies, paperSize } = req.body;
 
-  const pdfUrl = await PhotoServices.generatePdf(photoId, { copies, paperSize });
+  const pdfUrl = await PhotoServices.generatePdf(photoId, userId, { copies, paperSize });
 
   sendResponse(res, {
     success: true,
@@ -167,10 +173,12 @@ const generatePdf = catchAsync(async (req, res) => {
 // get the regenerated files.
 // ---------------------------------------------------------------------
 const regeneratePrintLayout = catchAsync(async (req, res) => {
+  const { id: userId } = req.user as { id: string };
+  
   const { photoId } = req.params as { photoId: string };
   const { copies, paperSize } = req.body;
 
-  const result = await PhotoServices.regeneratePrintLayoutLocal(photoId, copies, paperSize);
+  const result = await PhotoServices.regeneratePrintLayoutLocal(photoId, userId, copies, paperSize);
 
   sendResponse(res, {
     success: true,
