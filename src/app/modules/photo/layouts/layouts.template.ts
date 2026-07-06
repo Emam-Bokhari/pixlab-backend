@@ -2,8 +2,6 @@ import { PAPER_SIZE, PHOTO_TYPE } from '../photo.constant';
 import { Orientation, PrintTemplate } from './layouts.type';
 
 
-
-
 /**
  * Predefined, hand-authored templates — exactly how real minilab
  * software (Fuji Frontier / Noritsu / DNP) ships fixed layout files.
@@ -48,21 +46,25 @@ const tpl = (
 // ---------------------------------------------------------------------
 const buildPortraitPhotoSet = (photoType: PHOTO_TYPE) => ({
   [PAPER_SIZE.FOUR_R]: {
+    1: tpl(photoType, 1, 1, 5, 4, 'landscape'),
     2: tpl(photoType, 1, 2, 5, 4, 'landscape'),
     4: tpl(photoType, 2, 2, 4, 4, 'landscape'),
     6: tpl(photoType, 2, 3, 4, 4, 'landscape'),
   },
   [PAPER_SIZE.FIVE_R]: {
+    1: tpl(photoType, 1, 1, 5, 4, 'landscape'),
     6: tpl(photoType, 2, 3, 4, 4, 'landscape'),
     8: tpl(photoType, 2, 4, 4, 4, 'landscape'),
     9: tpl(photoType, 3, 3, 4, 4, 'portrait'),
   },
   [PAPER_SIZE.SIX_R]: {
+    1: tpl(photoType, 1, 1, 5, 4, 'landscape'),
     8: tpl(photoType, 2, 4, 4, 4, 'landscape'),
     12: tpl(photoType, 4, 3, 4, 4, 'portrait'),
     16: tpl(photoType, 4, 4, 3, 2, 'portrait'),
   },
   [PAPER_SIZE.A_FOUR]: {
+    1: tpl(photoType, 1, 1, 5, 4, 'portrait'),
     12: tpl(photoType, 3, 4, 5, 4, 'portrait'),
     20: tpl(photoType, 5, 4, 5, 4, 'portrait'),
     24: tpl(photoType, 6, 4, 4, 3, 'portrait'),
@@ -75,19 +77,23 @@ const buildPortraitPhotoSet = (photoType: PHOTO_TYPE) => ({
 // ---------------------------------------------------------------------
 const buildStampSet = (photoType: PHOTO_TYPE) => ({
   [PAPER_SIZE.FOUR_R]: {
+    1: tpl(photoType, 1, 1, 4, 3, 'landscape'),
     4: tpl(photoType, 2, 2, 4, 3, 'landscape'),
     6: tpl(photoType, 2, 3, 4, 3, 'landscape'),
     8: tpl(photoType, 2, 4, 4, 3, 'landscape'),
   },
   [PAPER_SIZE.FIVE_R]: {
+    1: tpl(photoType, 1, 1, 4, 3, 'landscape'),
     12: tpl(photoType, 3, 4, 4, 3, 'landscape'),
     16: tpl(photoType, 4, 4, 4, 3, 'portrait'),
   },
   [PAPER_SIZE.SIX_R]: {
+    1: tpl(photoType, 1, 1, 4, 3, 'landscape'),
     20: tpl(photoType, 4, 5, 3, 2, 'portrait'),
     24: tpl(photoType, 4, 6, 3, 2, 'landscape'),
   },
   [PAPER_SIZE.A_FOUR]: {
+    1: tpl(photoType, 1, 1, 4, 3, 'portrait'),
     30: tpl(photoType, 6, 5, 5, 3, 'portrait'),
     36: tpl(photoType, 6, 6, 5, 3, 'portrait'),
   },
