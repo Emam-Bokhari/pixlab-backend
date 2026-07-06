@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
 import { Secret } from 'jsonwebtoken';
 import { User } from '../modules/user/user.model';
 import { HttpError } from '../errors/HttpError';
@@ -13,10 +12,10 @@ const auth =
     try {
       const tokenWithBearer = req.headers.authorization;
       if (!tokenWithBearer) {
-        throw new HttpError(StatusCodes.UNAUTHORIZED, 'You are not authorized !!');
+        throw new HttpError(401, 'You are not authorized !!');
       }
       if (!tokenWithBearer.startsWith('Bearer')) {
-        throw new HttpError(StatusCodes.UNAUTHORIZED, 'Token send is not valid !!');
+        throw new HttpError(401, 'Token send is not valid !!');
       }
 
       if (tokenWithBearer && tokenWithBearer.startsWith('Bearer')) {
@@ -27,23 +26,23 @@ const auth =
         try {
           verifyUser = verifyToken(token, config.jwt.jwt_secret as Secret);
         } catch (error) {
-          throw new HttpError(StatusCodes.UNAUTHORIZED, 'You are not authorized !!');
+          throw new HttpError(401, 'You are not authorized !!');
         }
 
         //  user check isUserExist or not
         const user = await User.isExistUserById(verifyUser.id);
         if (!user) {
-          throw new HttpError(StatusCodes.NOT_FOUND, 'This user is not found !!');
+          throw new HttpError(404, 'This user is not found !!');
         }
 
         if (user?.status === USER_STATUS.BLOCKED) {
-          throw new HttpError(StatusCodes.FORBIDDEN, 'This user is blocked !!');
+          throw new HttpError(403, 'This user is blocked !!');
         }
 
         //guard user
         if (roles.length && !roles.includes(verifyUser?.role)) {
           throw new HttpError(
-            StatusCodes.FORBIDDEN,
+            403,
             "You don't have permission to access this api !!",
           );
         }

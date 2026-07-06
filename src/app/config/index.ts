@@ -24,13 +24,6 @@ export default {
     privateKey: process.env.FIREBASE_PRIVATE_KEY,
     projectId: process.env.FIREBASE_PROJECT_ID,
   },
-  stripe: {
-    stripeSecretKey: process.env.STRIPE_SECRET_KEY!,
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
-    paymentSuccess: process.env.STRIPE_PAYMENT_SUCCESS!,
-    BASE_URL: process.env.BASE_URL!,
-    currency: process.env.CURRENCY!,
-  },
   email: {
     from: process.env.EMAIL_FROM,
     user: process.env.EMAIL_USER,
@@ -38,7 +31,6 @@ export default {
     host: process.env.EMAIL_HOST,
     pass: process.env.EMAIL_PASS,
   },
-  gemini_api_key: process.env.GEMINI_API_KEY,
   jwt: {
     jwt_secret: process.env.JWT_SECRET,
     jwt_expire_in: process.env.JWT_EXPIRE_IN,

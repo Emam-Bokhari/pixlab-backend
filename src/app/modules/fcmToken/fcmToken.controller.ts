@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-
-import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../shared/catchAsync';
 import { FcmTokenServices } from './fcmToken.service';
 import sendResponse from '../../shared/sendResponse';
@@ -11,7 +9,7 @@ const createDeviceToken = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     success: true,
-    statusCode: StatusCodes.OK,
+    statusCode: 200,
     message: 'Device token saved successfully',
     data: result,
   });

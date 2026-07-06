@@ -2,7 +2,6 @@ import { Request } from 'express';
 import fs from 'fs';
 import path from 'path';
 import multer, { FileFilterCallback } from 'multer';
-import { StatusCodes } from 'http-status-codes';
 import { HttpError } from '../errors/HttpError';
 
 // types
@@ -109,11 +108,11 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallb
   const config = FILE_CONFIG[file.fieldname as IFolderName];
 
   if (!config) {
-    return cb(new HttpError(StatusCodes.BAD_REQUEST, 'Unsupported file field'));
+    return cb(new HttpError(400, 'Unsupported file field'));
   }
 
   if (!file.mimetype || !config.mimeTypes.has(file.mimetype)) {
-    return cb(new HttpError(StatusCodes.BAD_REQUEST, `Invalid file type for ${file.fieldname}`));
+    return cb(new HttpError(400, `Invalid file type for ${file.fieldname}`));
   }
 
   cb(null, true);

@@ -1,4 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
 import { HttpError } from '../../errors/HttpError';
 import { TFaq } from './faq.interface';
 import { Faq } from './faq.model';
@@ -7,7 +6,7 @@ import mongoose from 'mongoose';
 const createFaqToDB = async (payload: TFaq) => {
   const faq = await Faq.create(payload);
   if (!faq) {
-    throw new HttpError(StatusCodes.BAD_REQUEST, 'Failed to created Faq');
+    throw new HttpError(400, 'Failed to created Faq');
   }
 
   return faq;
@@ -23,14 +22,14 @@ const getFaqsFromDB = async () => {
 
 const updateFaqByIdToDB = async (id: string, payload: TFaq) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new HttpError(StatusCodes.BAD_REQUEST, 'Invalid Object ID');
+    throw new HttpError(400, 'Invalid Object ID');
   }
 
   const updatedFaq = await Faq.findByIdAndUpdate({ _id: id }, payload, {
     new: true,
   });
   if (!updatedFaq) {
-    throw new HttpError(StatusCodes.BAD_REQUEST, 'Failed to updated Faq');
+    throw new HttpError(400, 'Failed to updated Faq');
   }
 
   return updatedFaq;
@@ -38,7 +37,7 @@ const updateFaqByIdToDB = async (id: string, payload: TFaq) => {
 
 const deleteFaqByIdToDB = async (id: string) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new HttpError(StatusCodes.BAD_REQUEST, 'Invalid Object ID');
+    throw new HttpError(400, 'Invalid Object ID');
   }
 
   const result = await Faq.findByIdAndUpdate(
