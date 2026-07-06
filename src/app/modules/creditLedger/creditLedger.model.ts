@@ -2,8 +2,6 @@ import mongoose, { Schema } from 'mongoose';
 import { CREDIT_LEDGER_TYPE } from './creditLedger.constant';
 import { ICreditLedger } from './creditLedger.interface';
 
-
-
 const creditLedgerSchema = new Schema<ICreditLedger>(
   {
     userId: {
@@ -53,10 +51,9 @@ const creditLedgerSchema = new Schema<ICreditLedger>(
     },
   },
   {
-    // No updatedAt — this collection is append-only, entries are never edited.
-    timestamps: { createdAt: true, updatedAt: false },
+    timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 creditLedgerSchema.index({ userId: 1, createdAt: -1 });
