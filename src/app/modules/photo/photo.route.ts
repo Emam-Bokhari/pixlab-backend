@@ -3,11 +3,13 @@ import { PhotoControllers } from './photo.controller';
 import { isAuthenticated } from '../../helpers/auth.helper';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import { parseFileData } from '../../middlewares/parseFileData';
+import { requireCredits } from '../../middlewares/creditCheck.middleware';
 
 const router = Router();
 
 router.route('/').post(
   isAuthenticated,
+  requireCredits('photo_resize'),
   fileUploadHandler(),
   parseFileData({
     fieldName: 'originalImage',

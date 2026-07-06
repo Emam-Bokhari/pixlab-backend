@@ -4,6 +4,8 @@ import { WalletDocument } from './wallet.interface';
 import { CREDIT_PRICE_POISHA, FREE_SIGNUP_CREDITS } from './wallet.constant';
 import { CreditLedger } from '../creditLedger/creditLedger.model';
 import { CREDIT_LEDGER_TYPE } from '../creditLedger/creditLedger.constant';
+import { HttpError } from '../../errors/HttpError';
+import { CreditSetting } from '../creditSetting/creditSetting.model';
 
 export class InsufficientCreditsError extends Error {
   constructor() {
@@ -160,6 +162,54 @@ const refundCreditForPhotoUsage = async (
   });
 };
 
+const validateCreditsForOperation = async (
+  userId: string | Types.ObjectId,
+  key: string
+): Promise<{ requiredCredits: number; wallet: WalletDocument }> => {
+  const setting = await CreditSetting.findOne({ key });
+  const requiredCredits = setting ? setting.credits : 1;
+
+  const wallet = await getOrCreateWallet(userId);
+  if (wallet.credits < requiredCredits) {
+    throw new HttpError(
+      400,
+      `Insufficient credits. This operation requires ${requiredCredits} credits, but you only have ${wallet.credits}.`
+    );
+  }
+
+  return { requiredCredits, wallet };
+};
+
+const deductCreditsForOperation = async (
+  userId: string | Types.ObjectId,
+  key: string,
+  relatedEntityId?: { photoId?: string | Types.ObjectId },
+  customNote?: string
+): Promise<void> => {
+  const { requiredCredits, wallet } = await validateCreditsForOperation(userId, key);
+
+  if (requiredCredits <= 0) return;
+
+  wallet.credits -= requiredCredits;
+  wallet.lifetimeCreditsUsed += requiredCredits;
+  await wallet.save();
+
+  const ledgerData: any = {
+    userId,
+    walletId: wallet._id,
+    type: CREDIT_LEDGER_TYPE.USAGE,
+    creditsDelta: -requiredCredits,
+    balanceAfter: wallet.credits,
+    note: customNote || `Deducted ${requiredCredits} credits for ${key}`,
+  };
+
+  if (relatedEntityId?.photoId) {
+    ledgerData.relatedPhotoId = relatedEntityId.photoId;
+  }
+
+  await CreditLedger.create(ledgerData);
+};
+
 export const WalletServices = {
   getOrCreateWallet,
   getWalletSummary,
@@ -167,4 +217,6 @@ export const WalletServices = {
   applyPurchaseToWallet,
   deductCreditForPhotoUsage,
   refundCreditForPhotoUsage,
+  validateCreditsForOperation,
+  deductCreditsForOperation,
 };

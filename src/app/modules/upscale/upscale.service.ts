@@ -4,6 +4,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import mongoose from 'mongoose';
 import config from '../../config';
+import { WalletServices } from '../wallet/wallet.service';
 import { HttpError } from '../../errors/HttpError';
 import {
   downloadImageAsBuffer,
@@ -133,6 +134,9 @@ const upscaleImage = async (
   });
 
   await upscale.save();
+
+  // Deduct credits for the upscale operation
+  await WalletServices.deductCreditsForOperation(userId, 'upscale');
 
   return upscale;
 };
