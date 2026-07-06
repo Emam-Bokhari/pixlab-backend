@@ -150,7 +150,12 @@ const processWebhook = async (
     throw new Error('Unauthorized webhook: API key mismatch');
   }
 
-  return processVerifiedResult(payload);
+  const invoiceId = payload.invoice_id;
+  if (!invoiceId) {
+    throw new Error('Webhook payload did not include an invoice_id');
+  }
+
+  return verifyByInvoiceId(invoiceId);
 };
 
 const getPaymentById = async (paymentId: string): Promise<PaymentDocument | null> => {
