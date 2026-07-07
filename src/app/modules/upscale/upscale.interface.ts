@@ -1,4 +1,4 @@
-import { HydratedDocument, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { UPSCALE_STATUS } from './upscale.constant';
 
 export interface ImageDimensionInfo {

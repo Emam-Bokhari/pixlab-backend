@@ -13,7 +13,7 @@ import {
 } from './upscale.utils';
 import { TUpscale } from './upscale.interface';
 import { Upscale } from './upscale.model';
-
+ 
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
 const MAX_INPUT_DIMENSION = 4096;
 const MAX_FILE_SIZE_MB = 15;

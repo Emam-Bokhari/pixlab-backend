@@ -2,5 +2,4 @@
 dist
 node_modules
 README.md
-uploads/*
 logs/*
