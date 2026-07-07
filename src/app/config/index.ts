@@ -51,4 +51,5 @@ export default {
   cutout_pro_api_key: process.env.CUTOUT_PRO_API_KEY,
   cutout_pro_api_url: process.env.CUTOUT_PRO_API_URL,
   cutout_pro_upscale_api_url: process.env.CUTOUT_PRO_UPSCALE_API_URL,
+  bg_remover_api_url: process.env.BG_REMOVER_API_URL,
 };

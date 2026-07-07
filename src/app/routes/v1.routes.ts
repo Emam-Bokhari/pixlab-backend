@@ -16,6 +16,7 @@ import { WalletRoutes } from '../modules/wallet/wallet.route';
 import { CreditSettingRoutes } from '../modules/creditSetting/creditSetting.route';
 import { ReduceRoutes } from '../modules/reduce/reduce.route';
 import { ResizeRoutes } from '../modules/resize/resize.route';
+import { BgRemoveRoutes } from '../modules/bgRemove/bgRemove.route';
 
 const v1Router = express.Router();
 
@@ -87,6 +88,10 @@ const apiRoutes = [
   {
     path: '/resize',
     route: ResizeRoutes,
+  },
+  {
+    path: '/bg-remove',
+    route: BgRemoveRoutes,
   },
 ];
 

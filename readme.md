@@ -7,8 +7,8 @@
  features:
  1. photo resize (standalone abolng image already thakle shaita k resize korbe)
  2. reduce (standalone abolng image already thakle shaita k reduce korbe)
- 3. cloth change (standalone abolng image already thakle shaitr cloth change korbe)
- 4. converter (standalone abolng image already thakle shaita k convert korbe)
- 5. studio style print layout (standalone abolng image already thakle shaita k studio style a print layout toiri korbe)
- 
+ 3. converter (standalone abolng image already thakle shaita k convert korbe)
+ 4. studio style print layout (standalone abolng image already thakle shaita k studio style a print layout toiri korbe)
+ 5. upscale
+ 6. passport size photo maker
   -->
