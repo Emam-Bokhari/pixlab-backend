@@ -7,19 +7,74 @@ import { BG_REMOVE_STATUS } from './bgRemove.constant';
 import { removeBackground } from './bgRemove.client';
 
 
+// const createBgRemoveJob = async (
+//   userId: string,
+//   data: any
+// ): Promise<BgRemoveDocument> => {
+//   if (!data.image) throw new Error('No file provided');
+//   const { bgColor } = data;
+
+//   let originalBuffer: Buffer;
+//   if (typeof data.image === 'string') {
+//     const filePath = path.join(process.cwd(), data.image);
+//     if (!fs.existsSync(filePath)) {
+//       throw new Error('Uploaded image file not found on server');
+//     }
+//     originalBuffer = fs.readFileSync(filePath);
+//   } else if (data.image.buffer) {
+//     originalBuffer = data.image.buffer;
+//   } else if (data.image.path) {
+//     originalBuffer = fs.readFileSync(data.image.path);
+//   } else {
+//     throw new Error('File buffer not found');
+//   }
+
+//   const cleanBgColor = bgColor ? bgColor.replace('#', '').toUpperCase() : undefined;
+//   const originalImage = saveBgRemoveImage(originalBuffer, userId, 'original');
+
+//   const job = await BgRemove.create({
+//     userId,
+//     originalImage,
+//     bgColor: cleanBgColor,
+//     status: BG_REMOVE_STATUS.PROCESSING,
+//   });
+
+//   try {
+//     const processedBuffer = await removeBackground(originalBuffer, cleanBgColor);
+//     const processedImage = saveBgRemoveImage(processedBuffer, userId, 'processed');
+
+//     job.processedImage = processedImage;
+//     job.status = BG_REMOVE_STATUS.SUCCESS;
+//     await job.save();
+
+//     return job;
+//   } catch (error: any) {
+//     job.status = BG_REMOVE_STATUS.FAILED;
+//     job.errorMessage = error.message;
+//     await job.save();
+//     throw error;
+//   }
+// };
+
 const createBgRemoveJob = async (
   userId: string,
   data: any
 ): Promise<BgRemoveDocument> => {
-  if (!data.image) throw new Error('No file provided');
+  if (!data.image) {
+    throw new Error('No file provided');
+  }
+
   const { bgColor } = data;
 
   let originalBuffer: Buffer;
+
   if (typeof data.image === 'string') {
     const filePath = path.join(process.cwd(), data.image);
+
     if (!fs.existsSync(filePath)) {
       throw new Error('Uploaded image file not found on server');
     }
+
     originalBuffer = fs.readFileSync(filePath);
   } else if (data.image.buffer) {
     originalBuffer = data.image.buffer;
@@ -29,8 +84,17 @@ const createBgRemoveJob = async (
     throw new Error('File buffer not found');
   }
 
-  const cleanBgColor = bgColor ? bgColor.replace('#', '').toUpperCase() : undefined;
-  const originalImage = saveBgRemoveImage(originalBuffer, userId, 'original');
+  // Normalize bgColor
+  const cleanBgColor =
+    typeof bgColor === 'string' && bgColor.trim().length > 0
+      ? bgColor.trim().replace(/^#/, '').toUpperCase()
+      : undefined;
+
+  const originalImage = saveBgRemoveImage(
+    originalBuffer,
+    userId,
+    'original'
+  );
 
   const job = await BgRemove.create({
     userId,
@@ -40,18 +104,29 @@ const createBgRemoveJob = async (
   });
 
   try {
-    const processedBuffer = await removeBackground(originalBuffer, cleanBgColor);
-    const processedImage = saveBgRemoveImage(processedBuffer, userId, 'processed');
+    const processedBuffer = await removeBackground(
+      originalBuffer,
+      cleanBgColor
+    );
+
+    const processedImage = saveBgRemoveImage(
+      processedBuffer,
+      userId,
+      'processed'
+    );
 
     job.processedImage = processedImage;
     job.status = BG_REMOVE_STATUS.SUCCESS;
+
     await job.save();
 
     return job;
   } catch (error: any) {
     job.status = BG_REMOVE_STATUS.FAILED;
-    job.errorMessage = error.message;
+    job.errorMessage = error?.message || 'Background removal failed';
+
     await job.save();
+
     throw error;
   }
 };
