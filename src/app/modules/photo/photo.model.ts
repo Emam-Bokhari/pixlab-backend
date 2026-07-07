@@ -3,7 +3,6 @@
 // import { PhotoDocument } from './photo.interface';
 // import { RENDER_VERSION } from './layouts/layouts.constant';
 
-
 // const printOptionsSchema = new Schema(
 //   {
 //     paperSize: {
@@ -169,8 +168,6 @@ import { PAPER_SIZE, PHOTO_STATUS, PHOTO_TYPE } from './photo.constant';
 import { RENDER_VERSION } from './layouts/layouts.constant';
 import { IPhoto } from './photo.interface';
 
-
-
 const printOptionsSchema = new Schema(
   {
     paperSize: {
@@ -212,7 +209,7 @@ const printOptionsSchema = new Schema(
       default: RENDER_VERSION,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const photoSchema = new Schema<IPhoto>(
@@ -334,7 +331,7 @@ const photoSchema = new Schema<IPhoto>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 photoSchema.index({ userId: 1, createdAt: -1 });

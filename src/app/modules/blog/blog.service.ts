@@ -75,9 +75,6 @@ const getAllBlogsFromDB = async (query: Record<string, any>) => {
   };
 };
 
-
-
-
 const getBlogByIdFromDB = async (blogId: string) => {
   const result = await Blog.findById(blogId);
 

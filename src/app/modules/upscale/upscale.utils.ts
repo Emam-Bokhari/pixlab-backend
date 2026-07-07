@@ -11,7 +11,6 @@ export const downloadImageAsBuffer = async (url: string): Promise<Buffer> => {
   return Buffer.from(res.data);
 };
 
-
 export const saveOriginalImage = async (buffer: Buffer, userId: string): Promise<string> => {
   const folderName = 'upscaleOriginal';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);

@@ -13,16 +13,13 @@ import {
 } from './upscale.utils';
 import { TUpscale } from './upscale.interface';
 import { Upscale } from './upscale.model';
- 
+
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
 const MAX_INPUT_DIMENSION = 4096;
 const MAX_FILE_SIZE_MB = 15;
 const APPROX_MAX_OUTPUT_MEGAPIXELS = 4.5;
 
-const upscaleImage = async (
-  userId: string,
-  file?: Express.Multer.File,
-): Promise<TUpscale> => {
+const upscaleImage = async (userId: string, file?: Express.Multer.File): Promise<TUpscale> => {
   if (!file) throw new HttpError(400, 'No file provided');
 
   if (!config.cutout_pro_upscale_api_url || !config.cutout_pro_api_key) {
@@ -49,12 +46,13 @@ const upscaleImage = async (
       (metadata.width && metadata.width > MAX_INPUT_DIMENSION) ||
       (metadata.height && metadata.height > MAX_INPUT_DIMENSION)
     ) {
-      throw new Error(`Image resolution exceeds max allowed ${MAX_INPUT_DIMENSION}x${MAX_INPUT_DIMENSION}`);
+      throw new Error(
+        `Image resolution exceeds max allowed ${MAX_INPUT_DIMENSION}x${MAX_INPUT_DIMENSION}`,
+      );
     }
   } catch (err: any) {
     throw new HttpError(400, err.message || 'Invalid or unsupported image file');
   }
-
 
   const originalImagePath = await saveOriginalImage(originalBuffer, userId);
 
@@ -74,7 +72,6 @@ const upscaleImage = async (
       `Original image (${originalInfo.widthPx}x${originalInfo.heightPx}) is already at or above ` +
       `Cutout Pro's max output resolution for this enhancer. The result may come back smaller, not upscaled.`;
   }
-
 
   upscaleDoc.status = UPSCALE_STATUS.PROCESSING;
   await upscaleDoc.save();
@@ -107,19 +104,29 @@ const upscaleImage = async (
     const upscaledImageUrl = await saveUpscaledImage(upscaledBuffer, userId);
 
     const widthPercent = originalInfo.widthPx
-      ? Number((((upscaledInfo.widthPx - originalInfo.widthPx) / originalInfo.widthPx) * 100).toFixed(2))
+      ? Number(
+          (((upscaledInfo.widthPx - originalInfo.widthPx) / originalInfo.widthPx) * 100).toFixed(2),
+        )
       : 0;
     const heightPercent = originalInfo.heightPx
-      ? Number((((upscaledInfo.heightPx - originalInfo.heightPx) / originalInfo.heightPx) * 100).toFixed(2))
+      ? Number(
+          (((upscaledInfo.heightPx - originalInfo.heightPx) / originalInfo.heightPx) * 100).toFixed(
+            2,
+          ),
+        )
       : 0;
     const sizeBytesPercent = originalInfo.sizeBytes
-      ? Number((((upscaledInfo.sizeBytes - originalInfo.sizeBytes) / originalInfo.sizeBytes) * 100).toFixed(2))
+      ? Number(
+          (
+            ((upscaledInfo.sizeBytes - originalInfo.sizeBytes) / originalInfo.sizeBytes) *
+            100
+          ).toFixed(2),
+        )
       : 0;
     const sizeMBDiff = Number((upscaledInfo.sizeMB - originalInfo.sizeMB).toFixed(3));
 
     const didUpscale = widthPercent > 0 && heightPercent > 0;
 
-   
     upscaleDoc.upscaledImage = upscaledImageUrl;
     upscaleDoc.original = originalInfo;
     upscaleDoc.upscaled = upscaledInfo;
@@ -134,7 +141,7 @@ const upscaleImage = async (
       upscaleDoc.warning = warningMessage;
     }
     upscaleDoc.status = UPSCALE_STATUS.SUCCESS;
-    upscaleDoc.creditsUsed = 1;
+    upscaleDoc.creditsUsed = 5;
 
     await upscaleDoc.save();
 

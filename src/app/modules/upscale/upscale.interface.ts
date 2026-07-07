@@ -33,4 +33,3 @@ export interface TUpscale {
 
   createdAt: Date;
 }
-

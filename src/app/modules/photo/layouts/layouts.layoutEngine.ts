@@ -4,8 +4,6 @@ import { DPI } from './layouts.constant';
 import { getPaperDimensionsPxForOrientation, mmToPx } from './layouts.paper';
 import { GridPosition, LayoutResult, PrintTemplate } from './layouts.type';
 
-
-
 /**
  * Pure calculation: given a fixed template + paper size + photo size,
  * compute exact pixel positions for every slot, centered on the paper.
@@ -21,7 +19,7 @@ export const calculateLayout = (
   template: PrintTemplate,
   paperSize: PAPER_SIZE,
   photoSizeInfo: SizeInfo,
-  dpi: number = DPI
+  dpi: number = DPI,
 ): LayoutResult => {
   const paperPx = getPaperDimensionsPxForOrientation(paperSize, template.orientation, dpi);
 
@@ -33,10 +31,8 @@ export const calculateLayout = (
   const gapPx = mmToPx(template.gapMm, dpi);
   const marginPx = mmToPx(template.marginMm, dpi);
 
-  const gridWidthPx =
-    template.columns * photoPx.widthPx + (template.columns - 1) * gapPx;
-  const gridHeightPx =
-    template.rows * photoPx.heightPx + (template.rows - 1) * gapPx;
+  const gridWidthPx = template.columns * photoPx.widthPx + (template.columns - 1) * gapPx;
+  const gridHeightPx = template.rows * photoPx.heightPx + (template.rows - 1) * gapPx;
 
   const printableWidthPx = paperPx.widthPx - marginPx * 2;
   const printableHeightPx = paperPx.heightPx - marginPx * 2;
@@ -45,7 +41,7 @@ export const calculateLayout = (
     throw new Error(
       `Template "${template.name}" (${template.rows}x${template.columns}) does not fit on ` +
         `paperSize="${paperSize}" with marginMm=${template.marginMm}, gapMm=${template.gapMm}. ` +
-        `Grid is ${gridWidthPx}x${gridHeightPx}px, printable area is ${printableWidthPx}x${printableHeightPx}px.`
+        `Grid is ${gridWidthPx}x${gridHeightPx}px, printable area is ${printableWidthPx}x${printableHeightPx}px.`,
     );
   }
 

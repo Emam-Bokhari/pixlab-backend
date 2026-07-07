@@ -87,7 +87,7 @@ const apiRoutes = [
   {
     path: '/resize',
     route: ResizeRoutes,
-  }
+  },
 ];
 
 apiRoutes.forEach((route) => v1Router.use(route.path, route.route));

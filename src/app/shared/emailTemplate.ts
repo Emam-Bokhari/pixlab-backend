@@ -242,8 +242,6 @@ const verifyOtpTemplate = (values: { otp: number; email: string; name: string })
   return data;
 };
 
-
-
 export const emailTemplate = {
   createAccount,
   resetPassword,

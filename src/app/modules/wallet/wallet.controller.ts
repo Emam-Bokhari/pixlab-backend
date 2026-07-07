@@ -6,7 +6,7 @@ import sendResponse from '../../shared/sendResponse';
 
 // GET /wallet/me
 const getMyWallet = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id 
+  const userId = (req as any).user?.id;
 
   const result = await WalletServices.getWalletSummary(userId);
 
@@ -20,7 +20,7 @@ const getMyWallet = catchAsync(async (req: Request, res: Response) => {
 
 // GET /wallet/me/history
 const getMyCreditHistory = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id 
+  const userId = (req as any).user?.id;
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
 
   const result = await WalletServices.getCreditHistory(userId, limit);

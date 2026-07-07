@@ -7,18 +7,19 @@ import { requireCredits } from '../../middlewares/creditCheck.middleware';
 
 const router = Router();
 
-router.route('/').post(
-  isAuthenticated,
-  requireCredits('photo_resize'),
-  fileUploadHandler(),
-  parseFileData({
-    fieldName: 'originalImage',
-    mode: 'single',
-  }),PhotoControllers.createPhoto,
-).get(
-  isAuthenticated,
-  PhotoControllers.getAllPhotos,
-);
+router
+  .route('/')
+  .post(
+    isAuthenticated,
+    requireCredits('photo_resize'),
+    fileUploadHandler(),
+    parseFileData({
+      fieldName: 'originalImage',
+      mode: 'single',
+    }),
+    PhotoControllers.createPhoto,
+  )
+  .get(isAuthenticated, PhotoControllers.getAllPhotos);
 
 router.post('/:photoId/print-layout', isAuthenticated, PhotoControllers.generatePrintLayout);
 

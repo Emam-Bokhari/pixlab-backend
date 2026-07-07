@@ -42,16 +42,14 @@ const performResize = async (
   width: number,
   height: number,
 ): Promise<{ buffer: Buffer; format: string }> => {
-  let pipeline = sharp(buffer)
-    .rotate()
-    .resize({
-      width,
-      height,
-      fit: DEFAULT_RESIZE_FIT,
-      position: DEFAULT_CROP_STRATEGY,
-      kernel: sharp.kernel.lanczos3,
-      withoutEnlargement: false,
-    });
+  let pipeline = sharp(buffer).rotate().resize({
+    width,
+    height,
+    fit: DEFAULT_RESIZE_FIT,
+    position: DEFAULT_CROP_STRATEGY,
+    kernel: sharp.kernel.lanczos3,
+    withoutEnlargement: false,
+  });
 
   const metadata = await sharp(buffer).metadata();
   const detectedFormat = metadata.format as string | undefined;
@@ -99,7 +97,10 @@ const resizeImage = async (
 
   const fileSizeMB = originalBuffer.length / (1024 * 1024);
   if (fileSizeMB > RESIZE_LIMITS.MAX_INPUT_FILE_SIZE_MB) {
-    throw new HttpError(400, `Image exceeds max allowed size of ${RESIZE_LIMITS.MAX_INPUT_FILE_SIZE_MB}MB`);
+    throw new HttpError(
+      400,
+      `Image exceeds max allowed size of ${RESIZE_LIMITS.MAX_INPUT_FILE_SIZE_MB}MB`,
+    );
   }
 
   try {

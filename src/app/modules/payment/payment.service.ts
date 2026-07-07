@@ -19,7 +19,7 @@ const MIN_PURCHASE_BDT = 1;
 // ---------------------------------------------------------------------
 const initiateUddoktaPayPurchase = async (
   userId: string,
-  data: { amountBdt: number; fullName: string; email: string }
+  data: { amountBdt: number; fullName: string; email: string },
 ): Promise<{ paymentId: string; checkoutUrl: string }> => {
   const { amountBdt, fullName, email } = data;
 
@@ -76,7 +76,7 @@ const initiateUddoktaPayPurchase = async (
 // Idempotent: safe to call more than once for the same invoice_id.
 // ---------------------------------------------------------------------
 const processVerifiedResult = async (
-  result: UddoktaPayVerifyPaymentResponse
+  result: UddoktaPayVerifyPaymentResponse,
 ): Promise<PaymentDocument> => {
   const paymentId = result.metadata?.paymentId;
   if (!paymentId || !Types.ObjectId.isValid(paymentId)) {
@@ -109,7 +109,11 @@ const processVerifiedResult = async (
   // response string — so a tampered/odd response can't change how many
   // credits get awarded.
   const { creditsAwarded, leftoverPoishaBefore, leftoverPoishaAfter } =
-    await WalletServices.applyPurchaseToWallet(payment.userId, payment._id as Types.ObjectId, payment.amountPoisha);
+    await WalletServices.applyPurchaseToWallet(
+      payment.userId,
+      payment._id as Types.ObjectId,
+      payment.amountPoisha,
+    );
 
   payment.status = PAYMENT_STATUS.SUCCESS;
   payment.creditsAwarded = creditsAwarded;
@@ -144,7 +148,7 @@ const verifyByInvoiceId = async (invoiceId: string): Promise<PaymentDocument> =>
 // ---------------------------------------------------------------------
 const processWebhook = async (
   headerApiKey: string | undefined,
-  payload: UddoktaPayVerifyPaymentResponse
+  payload: UddoktaPayVerifyPaymentResponse,
 ): Promise<PaymentDocument> => {
   if (!headerApiKey || headerApiKey !== UDDOKTAPAY_CONFIG.apiKey) {
     throw new Error('Unauthorized webhook: API key mismatch');

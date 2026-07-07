@@ -1,7 +1,6 @@
 import { HydratedDocument, Types } from 'mongoose';
 import { CREDIT_LEDGER_TYPE } from './creditLedger.constant';
 
-
 export interface ICreditLedger {
   userId: Types.ObjectId;
   walletId: Types.ObjectId;

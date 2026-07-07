@@ -19,12 +19,10 @@ router
   .patch(
     isAuthenticated,
     fileUploadHandler(),
-    parseFileData(
-      {
-        fieldName: 'profileImage',
-        mode: 'single',
-      }
-    ),
+    parseFileData({
+      fieldName: 'profileImage',
+      mode: 'single',
+    }),
     UserControllers.updateProfile,
   )
   .delete(isAuthenticated, UserControllers.deleteMyProfile);

@@ -74,7 +74,7 @@ const paymentSchema = new Schema<IPayment>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 paymentSchema.index({ userId: 1, createdAt: -1 });
@@ -86,14 +86,14 @@ paymentSchema.index(
   {
     unique: true,
     partialFilterExpression: { gatewayInvoiceId: { $exists: true, $gt: '' } },
-  }
+  },
 );
 paymentSchema.index(
   { gateway: 1, gatewayTransactionId: 1 },
   {
     unique: true,
     partialFilterExpression: { gatewayTransactionId: { $exists: true, $gt: '' } },
-  }
+  },
 );
 
 export const Payment = mongoose.model<IPayment>('Payment', paymentSchema);

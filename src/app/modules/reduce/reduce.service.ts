@@ -14,7 +14,7 @@ const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
 
 const reduceImageSize = async (
   userId: string,
-  data: { targetSizeKb: number; image: string }
+  data: { targetSizeKb: number; image: string },
 ): Promise<ReduceDocument> => {
   const { targetSizeKb, image } = data;
 
@@ -50,17 +50,13 @@ const reduceImageSize = async (
   const originalInfo = await getImageSizeInfo(buffer);
 
   // Compress image
-  const compressionResult = await compressImageToTargetSize(
-    buffer,
-    targetSizeKb,
-    metadata.format
-  );
+  const compressionResult = await compressImageToTargetSize(buffer, targetSizeKb, metadata.format);
 
   // Save the reduced image
   const reducedImageUrl = await saveReducedImage(
     compressionResult.buffer,
     userId,
-    compressionResult.format
+    compressionResult.format,
   );
 
   const reducedInfo = await getImageSizeInfo(compressionResult.buffer);
@@ -68,11 +64,10 @@ const reduceImageSize = async (
   // Calculate stats
   const originalSize = originalInfo.sizeBytes;
   const reducedSize = reducedInfo.sizeBytes;
-  
+
   // Guard against division by zero
-  const reductionPercentage = originalSize > 0
-    ? Number((((originalSize - reducedSize) / originalSize) * 100).toFixed(2))
-    : 0;
+  const reductionPercentage =
+    originalSize > 0 ? Number((((originalSize - reducedSize) / originalSize) * 100).toFixed(2)) : 0;
 
   // Save to database
   const reduceRecord = new Reduce({

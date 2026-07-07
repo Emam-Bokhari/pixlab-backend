@@ -27,7 +27,9 @@ export interface UddoktaPayCreateChargeError {
   message: string;
 }
 
-export type UddoktaPayCreateChargeResponse = UddoktaPayCreateChargeSuccess | UddoktaPayCreateChargeError;
+export type UddoktaPayCreateChargeResponse =
+  | UddoktaPayCreateChargeSuccess
+  | UddoktaPayCreateChargeError;
 
 export type UddoktaPayPaymentStatus = 'COMPLETED' | 'PENDING' | 'ERROR';
 

@@ -4,7 +4,7 @@ import { AUTH_PURPOSE } from '../auth/auth.constant';
 import { ISoftDeleteMethods, ISoftDeleteStatics } from '../../DB/plugins/softDelete.plugin';
 
 export type TUser = {
-  name:string;
+  name: string;
   profileImage?: string;
   email: string;
   password: string;

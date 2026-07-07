@@ -41,10 +41,7 @@ const auth =
 
         //guard user
         if (roles.length && !roles.includes(verifyUser?.role)) {
-          throw new HttpError(
-            403,
-            "You don't have permission to access this api !!",
-          );
+          throw new HttpError(403, "You don't have permission to access this api !!");
         }
 
         //set user to header

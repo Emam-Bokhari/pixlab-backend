@@ -16,16 +16,12 @@ const shutdown = async () => {
 
   try {
     // close BullMQ workers
-    await Promise.all([
-      emailWorker.close(),
-    ]);
+    await Promise.all([emailWorker.close()]);
 
     logger.info('✅ Workers closed');
 
     // close BullMQ queues
-    await Promise.all([
-      emailQueue.close(),
-    ]);
+    await Promise.all([emailQueue.close()]);
 
     logger.info('✅ Queues closed');
 
@@ -59,7 +55,6 @@ process.on('unhandledRejection', (error) => {
 // kill signals
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
-
 
 async function main() {
   try {

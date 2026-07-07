@@ -7,7 +7,7 @@ class QueryBuilder<T> {
   constructor(modelQuery: Query<T[], T>, query: Record<string, any>) {
     this.modelQuery = modelQuery;
     this.query = query;
-  };
+  }
 
   // improved Search: Case insensitive search in multiple fields
   search(searchableFields: string[]) {
@@ -21,9 +21,9 @@ class QueryBuilder<T> {
             }) as any,
         ),
       });
-    };
+    }
     return this;
-  };
+  }
 
   // advanced Filter: Support for operators like (gt, lt, gte, lte)
   filter() {
@@ -39,14 +39,14 @@ class QueryBuilder<T> {
     this.modelQuery = this.modelQuery.find(JSON.parse(queryStr) as any);
 
     return this;
-  };
+  }
 
   // dynamic sorting
   sort() {
     const sort = (this.query?.sort as string)?.split(',')?.join(' ') || '-createdAt';
     this.modelQuery = this.modelQuery.sort(sort);
     return this;
-  };
+  }
 
   // pagination
   paginate() {
@@ -56,22 +56,22 @@ class QueryBuilder<T> {
 
     this.modelQuery = this.modelQuery.skip(skip).limit(limit);
     return this;
-  };
+  }
 
   // field selection projection
   fields() {
     const fields = (this.query?.fields as string)?.split(',')?.join(' ') || '-__v';
     this.modelQuery = this.modelQuery.select(fields);
     return this;
-  };
+  }
 
   // populate support
   populate(options: string | any) {
     if (options) {
       this.modelQuery = this.modelQuery.populate(options);
-    };
+    }
     return this;
-  };
+  }
 
   // count total documents
   async countTotal() {
@@ -89,9 +89,7 @@ class QueryBuilder<T> {
       total,
       totalPages,
     };
-
-  };
-
-};
+  }
+}
 
 export default QueryBuilder;

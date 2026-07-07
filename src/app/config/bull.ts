@@ -1,7 +1,7 @@
-import IORedis from "ioredis";
+import IORedis from 'ioredis';
 
 export const connection = new IORedis({
-  host: "127.0.0.1",
+  host: '127.0.0.1',
   port: 6379,
   maxRetriesPerRequest: null,
 });
@@ -9,12 +9,12 @@ export const connection = new IORedis({
 export const defaultJobOptions = {
   attempts: 3,
   backoff: {
-    type: "exponential",
+    type: 'exponential',
     delay: 2000,
   },
   // removeOnComplete: true,
-  removeOnComplete:{
-    age:3600
+  removeOnComplete: {
+    age: 3600,
   },
   removeOnFail: false,
 };

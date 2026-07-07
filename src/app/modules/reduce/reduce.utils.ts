@@ -16,15 +16,15 @@ export interface CompressedImageResult {
 export const compressImageToTargetSize = async (
   inputBuffer: Buffer,
   targetSizeKb: number,
-  originalFormat: string
+  originalFormat: string,
 ): Promise<CompressedImageResult> => {
   const targetSizeBytes = targetSizeKb * 1024;
-  
+
   const image = sharp(inputBuffer);
   const metadata = await image.metadata();
   const originalWidth = metadata.width || 800;
   const originalHeight = metadata.height || 600;
-  
+
   let format = originalFormat.toLowerCase();
   if (format === 'bmp' || format === 'png') {
     // BMP and PNG are lossless/uncompressed. For lossy size reduction,
@@ -42,16 +42,16 @@ export const compressImageToTargetSize = async (
   for (const scale of scaleFactors) {
     const w = Math.round(originalWidth * scale);
     const h = Math.round(originalHeight * scale);
-    
+
     let lowQ = minQuality;
     let highQ = maxQuality;
     let scaleBestBuffer: Buffer | null = null;
     let scaleBestSize = 0;
-    
+
     // Binary search for quality
     for (let iter = 0; iter < 4; iter++) {
       const q = Math.round((lowQ + highQ) / 2);
-      
+
       let proc = sharp(inputBuffer).resize(w, h);
       if (format === 'jpeg') {
         proc = proc.jpeg({ quality: q, chromaSubsampling: '4:2:0' });
@@ -60,10 +60,10 @@ export const compressImageToTargetSize = async (
       } else {
         proc = proc.png({ compressionLevel: 9 });
       }
-      
+
       const buf = await proc.toBuffer();
       const size = buf.length;
-      
+
       if (size <= targetSizeBytes) {
         scaleBestBuffer = buf;
         scaleBestSize = size;
@@ -79,7 +79,7 @@ export const compressImageToTargetSize = async (
         widthPx: w,
         heightPx: h,
         format,
-        sizeBytes: scaleBestBuffer.length
+        sizeBytes: scaleBestBuffer.length,
       };
     }
   }
@@ -88,7 +88,7 @@ export const compressImageToTargetSize = async (
   const minScale = 0.1;
   const w = Math.round(originalWidth * minScale);
   const h = Math.round(originalHeight * minScale);
-  
+
   let proc = sharp(inputBuffer).resize(w, h);
   if (format === 'jpeg') {
     proc = proc.jpeg({ quality: minQuality });
@@ -97,18 +97,22 @@ export const compressImageToTargetSize = async (
   } else {
     proc = proc.png({ compressionLevel: 9 });
   }
-  
+
   const finalBuffer = await proc.toBuffer();
   return {
     buffer: finalBuffer,
     widthPx: w,
     heightPx: h,
     format,
-    sizeBytes: finalBuffer.length
+    sizeBytes: finalBuffer.length,
   };
 };
 
-export const saveReducedImage = async (buffer: Buffer, userId: string, format: string): Promise<string> => {
+export const saveReducedImage = async (
+  buffer: Buffer,
+  userId: string,
+  format: string,
+): Promise<string> => {
   const folderName = 'reducedImage';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) {

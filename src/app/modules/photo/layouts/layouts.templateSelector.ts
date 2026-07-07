@@ -2,7 +2,6 @@ import { PHOTO_TYPE } from '../photo.constant';
 import { TEMPLATES } from './layouts.template';
 import { PrintTemplate, TemplateSelectionInput } from './layouts.type';
 
-
 /**
  * Resolves a fixed PrintTemplate for (photoType, paperSize, copies).
  *
@@ -18,7 +17,7 @@ export const selectTemplate = ({
 }: TemplateSelectionInput): PrintTemplate => {
   if (photoType === PHOTO_TYPE.CUSTOM) {
     throw new Error(
-      'CUSTOM photo type has no predefined templates. Provide an explicit PrintTemplate via selectCustomTemplate().'
+      'CUSTOM photo type has no predefined templates. Provide an explicit PrintTemplate via selectCustomTemplate().',
     );
   }
 
@@ -26,7 +25,7 @@ export const selectTemplate = ({
 
   if (!byPaper) {
     throw new Error(
-      `No templates defined for photoType="${photoType}" on paperSize="${paperSize}".`
+      `No templates defined for photoType="${photoType}" on paperSize="${paperSize}".`,
     );
   }
 
@@ -36,7 +35,7 @@ export const selectTemplate = ({
     const supported = Object.keys(byPaper).join(', ');
     throw new Error(
       `Unsupported copies=${copies} for photoType="${photoType}" paperSize="${paperSize}". ` +
-        `Supported copy counts are: ${supported}.`
+        `Supported copy counts are: ${supported}.`,
     );
   }
 
@@ -53,9 +52,11 @@ export const selectCustomTemplate = (template: PrintTemplate): PrintTemplate => 
 
 export const listSupportedCopyCounts = (
   photoType: PHOTO_TYPE,
-  paperSize: TemplateSelectionInput['paperSize']
+  paperSize: TemplateSelectionInput['paperSize'],
 ): number[] => {
   const byPaper = TEMPLATES[photoType]?.[paperSize];
   if (!byPaper) return [];
-  return Object.keys(byPaper).map(Number).sort((a, b) => a - b);
+  return Object.keys(byPaper)
+    .map(Number)
+    .sort((a, b) => a - b);
 };

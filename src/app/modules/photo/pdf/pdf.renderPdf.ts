@@ -2,7 +2,6 @@ import { PDFDocument } from 'pdf-lib';
 import { LayoutResult } from '../layouts/layouts.type';
 import { pxToMm } from '../layouts/layouts.paper';
 
-
 const PDF_POINTS_PER_INCH = 72;
 const MM_PER_INCH = 25.4;
 
@@ -27,7 +26,7 @@ const mmToPoints = (mm: number): number => (mm * PDF_POINTS_PER_INCH) / MM_PER_I
  */
 export const renderLayoutPdf = async (
   layoutPngBuffer: Buffer,
-  layout: LayoutResult
+  layout: LayoutResult,
 ): Promise<Buffer> => {
   const paperWidthMm = pxToMm(layout.paperPx.widthPx, layout.dpi);
   const paperHeightMm = pxToMm(layout.paperPx.heightPx, layout.dpi);

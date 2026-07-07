@@ -26,7 +26,7 @@ const imageSizeInfoSchema = new Schema(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const reduceSchema = new Schema<IReduce>(
@@ -71,7 +71,7 @@ const reduceSchema = new Schema<IReduce>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 reduceSchema.index({ userId: 1, createdAt: -1 });

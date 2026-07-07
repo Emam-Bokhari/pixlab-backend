@@ -12,7 +12,7 @@ router.patch(
   '/:key',
   isAdmin,
   validateRequestSchema(CreditSettingValidations.updateCreditSettingZodSchema),
-  CreditSettingControllers.updateCreditSetting
+  CreditSettingControllers.updateCreditSetting,
 );
 
 export const CreditSettingRoutes = router;

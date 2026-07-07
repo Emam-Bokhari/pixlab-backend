@@ -1,7 +1,6 @@
 import { PAPER_SIZE, PHOTO_TYPE } from '../photo.constant';
 import { Orientation, PrintTemplate } from './layouts.type';
 
-
 /**
  * Predefined, hand-authored templates — exactly how real minilab
  * software (Fuji Frontier / Noritsu / DNP) ships fixed layout files.
@@ -31,7 +30,7 @@ const tpl = (
   columns: number,
   marginMm: number,
   gapMm: number,
-  orientation: Orientation
+  orientation: Orientation,
 ): PrintTemplate => ({
   name: `${photoType}-${rows}x${columns}-${orientation}`,
   rows,

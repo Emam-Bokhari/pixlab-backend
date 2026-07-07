@@ -70,8 +70,12 @@ const getCreditHistory = async (userId: string | Types.ObjectId, limit = 50) => 
 const applyPurchaseToWallet = async (
   userId: string | Types.ObjectId,
   paymentId: Types.ObjectId,
-  amountPoisha: number
-): Promise<{ creditsAwarded: number; leftoverPoishaBefore: number; leftoverPoishaAfter: number }> => {
+  amountPoisha: number,
+): Promise<{
+  creditsAwarded: number;
+  leftoverPoishaBefore: number;
+  leftoverPoishaAfter: number;
+}> => {
   const wallet = await getOrCreateWallet(userId);
 
   const leftoverPoishaBefore = wallet.balancePoisha;
@@ -112,7 +116,7 @@ const applyPurchaseToWallet = async (
  */
 const deductCreditForPhotoUsage = async (
   userId: string | Types.ObjectId,
-  photoId: Types.ObjectId | string
+  photoId: Types.ObjectId | string,
 ): Promise<void> => {
   const wallet = await getOrCreateWallet(userId);
 
@@ -144,7 +148,7 @@ const deductCreditForPhotoUsage = async (
 const refundCreditForPhotoUsage = async (
   userId: string | Types.ObjectId,
   photoId: Types.ObjectId | string,
-  note?: string
+  note?: string,
 ): Promise<void> => {
   const wallet = await getOrCreateWallet(userId);
 
@@ -164,7 +168,7 @@ const refundCreditForPhotoUsage = async (
 
 const validateCreditsForOperation = async (
   userId: string | Types.ObjectId,
-  key: string
+  key: string,
 ): Promise<{ requiredCredits: number; wallet: WalletDocument }> => {
   const setting = await CreditSetting.findOne({ key });
   const requiredCredits = setting ? setting.credits : 1;
@@ -173,7 +177,7 @@ const validateCreditsForOperation = async (
   if (wallet.credits < requiredCredits) {
     throw new HttpError(
       400,
-      `Insufficient credits. This operation requires ${requiredCredits} credits, but you only have ${wallet.credits}.`
+      `Insufficient credits. This operation requires ${requiredCredits} credits, but you only have ${wallet.credits}.`,
     );
   }
 
@@ -184,7 +188,7 @@ const deductCreditsForOperation = async (
   userId: string | Types.ObjectId,
   key: string,
   relatedEntityId?: { photoId?: string | Types.ObjectId },
-  customNote?: string
+  customNote?: string,
 ): Promise<void> => {
   const { requiredCredits, wallet } = await validateCreditsForOperation(userId, key);
 

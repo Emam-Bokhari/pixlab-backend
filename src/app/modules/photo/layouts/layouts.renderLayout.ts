@@ -1,7 +1,6 @@
 import sharp from 'sharp';
 import { LayoutResult } from './layouts.type';
 
-
 export interface RenderOptions {
   /** RGBA background, defaults to opaque white */
   backgroundColor?: { r: number; g: number; b: number; alpha: number };
@@ -22,7 +21,7 @@ export interface RenderOptions {
 export const renderLayout = async (
   singleImageBuffer: Buffer,
   layout: LayoutResult,
-  options: RenderOptions = {}
+  options: RenderOptions = {},
 ): Promise<Buffer> => {
   const {
     backgroundColor = { r: 255, g: 255, b: 255, alpha: 1 },
@@ -31,7 +30,7 @@ export const renderLayout = async (
 
   if (copiesToRender > layout.totalSlots) {
     throw new Error(
-      `copiesToRender (${copiesToRender}) exceeds template capacity (${layout.totalSlots}) for template "${layout.template.name}".`
+      `copiesToRender (${copiesToRender}) exceeds template capacity (${layout.totalSlots}) for template "${layout.template.name}".`,
     );
   }
 

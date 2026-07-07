@@ -27,7 +27,7 @@ const creditSettingSchema = new Schema<TCreditSetting>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const CreditSetting = model<TCreditSetting>('CreditSetting', creditSettingSchema);

@@ -1,7 +1,6 @@
 import { HydratedDocument, Types } from 'mongoose';
 import { PAYMENT_GATEWAY, PAYMENT_PURPOSE, PAYMENT_STATUS } from './payment.constant';
 
-
 export interface IPayment {
   userId: Types.ObjectId;
 

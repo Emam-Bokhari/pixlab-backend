@@ -1,9 +1,8 @@
 import { defaultJobOptions, connection } from './../../app/config/bull';
 
-import { Queue } from "bullmq";
+import { Queue } from 'bullmq';
 
-export const emailQueue = new Queue("emailQueue", {
-    connection,
-    defaultJobOptions,
-})
-
+export const emailQueue = new Queue('emailQueue', {
+  connection,
+  defaultJobOptions,
+});

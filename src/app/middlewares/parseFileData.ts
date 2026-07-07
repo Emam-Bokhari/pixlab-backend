@@ -99,12 +99,11 @@ export const parseFileData = (...fields: FieldInput[]) => {
 
 const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
-
 export const downloadAndSaveProcessedImage = async (
-  input: Buffer | string,                    // Buffer or URL
+  input: Buffer | string, // Buffer or URL
   userId: string,
   photoType: string,
-  variant: 'png' | 'jpg' | 'webp' | 'layout' | 'single'
+  variant: 'png' | 'jpg' | 'webp' | 'layout' | 'single',
 ): Promise<string> => {
   let buffer: Buffer;
 
@@ -121,16 +120,16 @@ export const downloadAndSaveProcessedImage = async (
 
   switch (variant) {
     case 'jpg':
-      sharpInstance = sharpInstance.jpeg({ 
-        quality: 95, 
-        progressive: true 
+      sharpInstance = sharpInstance.jpeg({
+        quality: 95,
+        progressive: true,
       });
       break;
 
     case 'webp':
-      sharpInstance = sharpInstance.webp({ 
+      sharpInstance = sharpInstance.webp({
         quality: 90,
-        alphaQuality: 100 
+        alphaQuality: 100,
       });
       break;
 
@@ -138,10 +137,10 @@ export const downloadAndSaveProcessedImage = async (
     case 'single':
     case 'layout':
     default:
-      sharpInstance = sharpInstance.png({ 
+      sharpInstance = sharpInstance.png({
         quality: 100,
         compressionLevel: 6,
-        adaptiveFiltering: true 
+        adaptiveFiltering: true,
       });
   }
 
@@ -150,7 +149,7 @@ export const downloadAndSaveProcessedImage = async (
   // সেভ করার ফোল্ডার
   const folderName = 'processedImage';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
-  
+
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }

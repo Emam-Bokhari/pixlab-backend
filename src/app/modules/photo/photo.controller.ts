@@ -2,7 +2,6 @@ import catchAsync from '../../shared/catchAsync';
 import sendResponse from '../../shared/sendResponse';
 import { PhotoServices } from './photo.service';
 
-
 // ---------------------------------------------------------------------
 // STEP 1 — POST /photos
 // multipart/form-data: file field (multer) + body fields
@@ -103,9 +102,6 @@ const createPhoto = catchAsync(async (req, res) => {
 //   regeneratePrintLayout,
 // };
 
-
-
-
 // ---------------------------------------------------------------------
 // STEP 2 — POST /photos/:photoId/print-layout
 // "Print Layout" button — composites the centered studio sheet if it
@@ -174,7 +170,7 @@ const generatePdf = catchAsync(async (req, res) => {
 // ---------------------------------------------------------------------
 const regeneratePrintLayout = catchAsync(async (req, res) => {
   const { id: userId } = req.user as { id: string };
-  
+
   const { photoId } = req.params as { photoId: string };
   const { copies, paperSize } = req.body;
 
@@ -183,7 +179,8 @@ const regeneratePrintLayout = catchAsync(async (req, res) => {
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: 'Copies/paper size updated successfully. Regenerate print-layout/converter/pdf to get fresh files.',
+    message:
+      'Copies/paper size updated successfully. Regenerate print-layout/converter/pdf to get fresh files.',
     data: result,
   });
 });

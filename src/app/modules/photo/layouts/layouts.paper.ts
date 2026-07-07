@@ -2,7 +2,6 @@ import { PAPER_SIZE } from '../photo.constant';
 import { DPI, MM_PER_INCH } from './layouts.constant';
 import { Orientation, PaperDimensionsMm, PaperDimensionsPx } from './layouts.type';
 
-
 /**
  * Real physical paper sizes in millimeters (landscape orientation,
  * width x height), matching standard minilab paper cuts.
@@ -17,8 +16,7 @@ export const PAPER_DIMENSIONS_MM: Record<PAPER_SIZE, PaperDimensionsMm> = {
 export const mmToPx = (mm: number, dpi: number = DPI): number =>
   Math.round((mm * dpi) / MM_PER_INCH);
 
-export const pxToMm = (px: number, dpi: number = DPI): number =>
-  (px * MM_PER_INCH) / dpi;
+export const pxToMm = (px: number, dpi: number = DPI): number => (px * MM_PER_INCH) / dpi;
 
 export const getPaperDimensionsMm = (paperSize: PAPER_SIZE): PaperDimensionsMm => {
   const dims = PAPER_DIMENSIONS_MM[paperSize];
@@ -30,7 +28,7 @@ export const getPaperDimensionsMm = (paperSize: PAPER_SIZE): PaperDimensionsMm =
 
 export const getPaperDimensionsPx = (
   paperSize: PAPER_SIZE,
-  dpi: number = DPI
+  dpi: number = DPI,
 ): PaperDimensionsPx => {
   const { widthMm, heightMm } = getPaperDimensionsMm(paperSize);
   return {
@@ -52,7 +50,7 @@ export const getPaperDimensionsPx = (
 export const getPaperDimensionsPxForOrientation = (
   paperSize: PAPER_SIZE,
   orientation: Orientation,
-  dpi: number = DPI
+  dpi: number = DPI,
 ): PaperDimensionsPx => {
   const natural = getPaperDimensionsPx(paperSize, dpi);
   const naturalOrientation: Orientation =

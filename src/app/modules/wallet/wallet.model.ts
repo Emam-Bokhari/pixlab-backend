@@ -49,9 +49,7 @@ const walletSchema = new Schema<IWallet>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
-
-
 
 export const Wallet = mongoose.model<IWallet>('Wallet', walletSchema);

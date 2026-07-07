@@ -42,7 +42,6 @@ const createUserToDB = async (payload: ICreateUserPayload) => {
 
   payload.password = hashedPassword;
 
-
   user = user ?? (await User.create(payload));
   if (!user) throw new HttpError(400, 'Failed to create user');
 
@@ -72,7 +71,7 @@ const createUserToDB = async (payload: ICreateUserPayload) => {
     },
   });
 
-// send notification to admin
+  // send notification to admin
   const admins = await User.find({
     role: { $in: [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN] },
   }).select('_id');
@@ -86,13 +85,12 @@ const createUserToDB = async (payload: ICreateUserPayload) => {
       type: NOTIFICATION_TYPE.NEW_USER_REGISTRATION,
     });
   }
-  
+
   return { message: 'OTP sent successfully' };
 };
 
 // verify OTP
 const verifyOTPToDB = async (payload: IVerifyOTP) => {
-
   const { email, oneTimeCode, purpose } = payload;
 
   const user = await User.findOne({

@@ -11,7 +11,7 @@ const updateCreditSettingInDB = async (key: string, payload: { credits: number }
   const updatedSetting = await CreditSetting.findOneAndUpdate(
     { key },
     { $set: { credits: payload.credits } },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   );
 
   if (!updatedSetting) {

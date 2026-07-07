@@ -4,7 +4,6 @@ import fs from 'fs';
 import path from 'path';
 import { DPI } from './layouts/layouts.constant';
 
-
 export const bufferToBase64 = (buffer: Buffer): string => buffer.toString('base64');
 
 const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
@@ -27,7 +26,7 @@ export const downloadAndSaveProcessedImage = async (
   userId: string,
   photoType: string,
   variant: 'png' | 'jpg' | 'webp' | 'layout',
-  dpi: number = DPI
+  dpi: number = DPI,
 ): Promise<string> => {
   let sharpInstance = sharp(buffer).withMetadata({ density: dpi });
 
@@ -75,7 +74,7 @@ export const readSavedFileBuffer = (publicUrl: string): Buffer => {
 export const downloadAndSavePdf = async (
   buffer: Buffer,
   userId: string,
-  photoType: string
+  photoType: string,
 ): Promise<string> => {
   const folderName = 'processedImage';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);

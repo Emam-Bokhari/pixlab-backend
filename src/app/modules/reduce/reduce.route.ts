@@ -18,13 +18,9 @@ router.post(
     mode: 'single',
   }),
   validateRequestSchema(ReduceValidations.reduceImageZodSchema),
-  ReduceControllers.reducePhoto
+  ReduceControllers.reducePhoto,
 );
 
-router.get(
-  '/',
-  isAuthenticated,
-  ReduceControllers.getAllReducedImages
-);
+router.get('/', isAuthenticated, ReduceControllers.getAllReducedImages);
 
 export const ReduceRoutes = router;

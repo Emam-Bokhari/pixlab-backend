@@ -7,11 +7,9 @@ import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 
 const app = express();
 
-
-
 app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
-  
+
 // parser
 app.use(express.json());
 app.use(cors());

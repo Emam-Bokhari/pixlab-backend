@@ -10,10 +10,14 @@ import sendResponse from '../../shared/sendResponse';
 // Returns a checkoutUrl — frontend redirects the browser there.
 // ---------------------------------------------------------------------
 const initiateUddoktaPayPurchase = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id 
+  const userId = (req as any).user?.id;
   const { amountBdt, fullName, email } = req.body;
 
-  const result = await PaymentServices.initiateUddoktaPayPurchase(userId, { amountBdt, fullName, email });
+  const result = await PaymentServices.initiateUddoktaPayPurchase(userId, {
+    amountBdt,
+    fullName,
+    email,
+  });
 
   sendResponse(res, {
     success: true,

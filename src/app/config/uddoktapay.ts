@@ -1,5 +1,4 @@
-import config from ".";
-
+import config from '.';
 
 /**
  * UddoktaPay sandbox credentials, straight from their docs
