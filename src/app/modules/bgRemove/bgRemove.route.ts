@@ -16,7 +16,7 @@ router.post(
   }),
   BgRemoveControllers.createBgRemoveJob,
 );
-router.get('/me/history', isAuthenticated, BgRemoveControllers.getMyBgRemoveJobs);
+router.get('/', isAuthenticated, BgRemoveControllers.getMyBgRemoveJobs);
 router.get('/:jobId', isAuthenticated, BgRemoveControllers.getBgRemoveJobById);
 
 export const BgRemoveRoutes = router;
