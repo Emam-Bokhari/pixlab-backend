@@ -15,6 +15,7 @@ import { PaymentRoutes } from '../modules/payment/payment.route';
 import { WalletRoutes } from '../modules/wallet/wallet.route';
 import { CreditSettingRoutes } from '../modules/creditSetting/creditSetting.route';
 import { ReduceRoutes } from '../modules/reduce/reduce.route';
+import { ResizeRoutes } from '../modules/resize/resize.route';
 
 const v1Router = express.Router();
 
@@ -82,6 +83,10 @@ const apiRoutes = [
   {
     path: '/reduce',
     route: ReduceRoutes,
+  },
+  {
+    path: '/resize',
+    route: ResizeRoutes,
   }
 ];
 
