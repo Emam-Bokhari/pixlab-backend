@@ -1,6 +1,7 @@
 <!-- 
 1. jai somosto jaigai redis use kora jabe, shai jaiga gula te redis use korte hobe
 2. kontar khetre koto credits khoroch hoi shaita admin dashboard theke dynamic hobe
+3. transparent bg hisebe aikhne white color use kora hoise, but aita k change korte hobe, transparaent mane pichone kono color e thabe na, mane kiso e thakbe na amon hobe
  -->
 
  <!-- 
