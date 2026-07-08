@@ -67,6 +67,10 @@ const reduceSchema = new Schema<IReduce>(
       required: true,
       trim: true,
     },
+    reducedPhotoId: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

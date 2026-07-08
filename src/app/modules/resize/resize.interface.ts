@@ -30,6 +30,7 @@ export interface IResize {
   errorMessage?: string;
 
   createdAt: Date;
+  resizedPhotoId?: string;
 }
 
 export type ResizeDocument = HydratedDocument<IResize>;

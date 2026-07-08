@@ -2,6 +2,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { ImageSizeInfo } from './reduce.interface';
+import { generateReducedPhotoId } from '../../utils/generateYearBasedId';
 
 const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
@@ -113,14 +114,16 @@ export const saveReducedImage = async (
   userId: string,
   format: string,
 ): Promise<string> => {
-  const folderName = 'reducedImage';
+  const folderName = 'reduce';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
   const ext = format === 'jpeg' ? 'jpg' : format;
-  const fileName = `${userId}-reduce-${Date.now()}.${ext}`;
+  // const fileName = `${userId}-reduce-${Date.now()}.${ext}`;
+  const reducedPhotoId = await generateReducedPhotoId();
+  const fileName = `${reducedPhotoId}.${ext}`;
   const filePath = path.join(dir, fileName);
   fs.writeFileSync(filePath, buffer);
 

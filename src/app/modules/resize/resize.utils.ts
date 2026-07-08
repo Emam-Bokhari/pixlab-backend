@@ -2,6 +2,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { ImageDimensionInfo } from './resize.interface';
+import { generateResizedPhotoId } from '../../utils/generateYearBasedId';
 
 const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
@@ -20,13 +21,15 @@ export const getImageDimensionInfo = async (buffer: Buffer): Promise<ImageDimens
 };
 
 export const saveOriginalImage = async (buffer: Buffer, userId: string): Promise<string> => {
-  const folderName = 'resizeOriginal';
+  const folderName = 'resize-original';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   const metadata = await sharp(buffer).metadata();
   const ext = metadata.format || 'png';
-  const fileName = `${userId}-original-${Date.now()}.${ext}`;
+  // const fileName = `${userId}-original-${Date.now()}.${ext}`;
+  const resizedPhotoId = await generateResizedPhotoId();
+  const fileName = `${resizedPhotoId}.${ext}`;
   const filePath = path.join(dir, fileName);
   fs.writeFileSync(filePath, buffer);
 
@@ -38,11 +41,13 @@ export const saveResizedImage = async (
   userId: string,
   format: string,
 ): Promise<string> => {
-  const folderName = 'resizedImage';
+  const folderName = 'resize';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  const fileName = `${userId}-resized-${Date.now()}.${format}`;
+  // const fileName = `${userId}-resized-${Date.now()}.${format}`;
+  const resizedPhotoId = await generateResizedPhotoId();
+  const fileName = `${resizedPhotoId}.${format}`;
   const filePath = path.join(dir, fileName);
   fs.writeFileSync(filePath, buffer);
 

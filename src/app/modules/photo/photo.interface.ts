@@ -47,6 +47,7 @@ export interface IPhoto extends PhotoInput {
   createdAt: Date;
   expiresAt?: Date;
   printOptions?: PrintOptions | undefined;
+  photoId: string | undefined;
 }
 
 /**

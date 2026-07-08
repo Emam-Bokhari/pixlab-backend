@@ -19,6 +19,7 @@ export interface IReduce {
   format: string; // jpeg, png, webp, etc.
   createdAt?: Date;
   updatedAt?: Date;
+  reducedPhotoId?: string;
 }
 
 export type ReduceDocument = HydratedDocument<IReduce>;

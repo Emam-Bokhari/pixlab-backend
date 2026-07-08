@@ -68,6 +68,11 @@ const resizeSchema = new Schema<IResize>(
       type: Date,
       default: Date.now,
     },
+
+    resizedPhotoId: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,

@@ -78,6 +78,11 @@ const upscaleSchema = new Schema<TUpscale>(
       type: Date,
       default: Date.now,
     },
+
+    upscaledPhotoId: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

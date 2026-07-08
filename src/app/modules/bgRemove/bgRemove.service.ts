@@ -1,78 +1,30 @@
-import fs from 'fs';
-import path from 'path';
-import { BgRemoveDocument } from './bgRemove.interface';
-import { saveBgRemoveImage } from './bgRemove.utils';
-import { BgRemove } from './bgRemove.model';
-import { BG_REMOVE_STATUS } from './bgRemove.constant';
-import { removeBackground } from './bgRemove.client';
+import fs from "fs";
+import path from "path";
 
-
-// const createBgRemoveJob = async (
-//   userId: string,
-//   data: any
-// ): Promise<BgRemoveDocument> => {
-//   if (!data.image) throw new Error('No file provided');
-//   const { bgColor } = data;
-
-//   let originalBuffer: Buffer;
-//   if (typeof data.image === 'string') {
-//     const filePath = path.join(process.cwd(), data.image);
-//     if (!fs.existsSync(filePath)) {
-//       throw new Error('Uploaded image file not found on server');
-//     }
-//     originalBuffer = fs.readFileSync(filePath);
-//   } else if (data.image.buffer) {
-//     originalBuffer = data.image.buffer;
-//   } else if (data.image.path) {
-//     originalBuffer = fs.readFileSync(data.image.path);
-//   } else {
-//     throw new Error('File buffer not found');
-//   }
-
-//   const cleanBgColor = bgColor ? bgColor.replace('#', '').toUpperCase() : undefined;
-//   const originalImage = saveBgRemoveImage(originalBuffer, userId, 'original');
-
-//   const job = await BgRemove.create({
-//     userId,
-//     originalImage,
-//     bgColor: cleanBgColor,
-//     status: BG_REMOVE_STATUS.PROCESSING,
-//   });
-
-//   try {
-//     const processedBuffer = await removeBackground(originalBuffer, cleanBgColor);
-//     const processedImage = saveBgRemoveImage(processedBuffer, userId, 'processed');
-
-//     job.processedImage = processedImage;
-//     job.status = BG_REMOVE_STATUS.SUCCESS;
-//     await job.save();
-
-//     return job;
-//   } catch (error: any) {
-//     job.status = BG_REMOVE_STATUS.FAILED;
-//     job.errorMessage = error.message;
-//     await job.save();
-//     throw error;
-//   }
-// };
+import { BgRemove } from "./bgRemove.model";
+import { BgRemoveDocument } from "./bgRemove.interface";
+import { BG_REMOVE_STATUS } from "./bgRemove.constant";
+import { removeBackground } from "./bgRemove.client";
+import { saveBgRemoveImage } from "./bgRemove.utils";
+import { generateBgRemovePhotoId } from "../../utils/generateYearBasedId";
 
 const createBgRemoveJob = async (
   userId: string,
   data: any
 ): Promise<BgRemoveDocument> => {
   if (!data.image) {
-    throw new Error('No file provided');
+    throw new Error("No file provided");
   }
 
   const { bgColor } = data;
 
   let originalBuffer: Buffer;
 
-  if (typeof data.image === 'string') {
+  if (typeof data.image === "string") {
     const filePath = path.join(process.cwd(), data.image);
 
     if (!fs.existsSync(filePath)) {
-      throw new Error('Uploaded image file not found on server');
+      throw new Error("Uploaded image file not found on server");
     }
 
     originalBuffer = fs.readFileSync(filePath);
@@ -81,23 +33,28 @@ const createBgRemoveJob = async (
   } else if (data.image.path) {
     originalBuffer = fs.readFileSync(data.image.path);
   } else {
-    throw new Error('File buffer not found');
+    throw new Error("File buffer not found");
   }
 
-  // Normalize bgColor
   const cleanBgColor =
-    typeof bgColor === 'string' && bgColor.trim().length > 0
-      ? bgColor.trim().replace(/^#/, '').toUpperCase()
+    typeof bgColor === "string" && bgColor.trim().length > 0
+      ? bgColor.trim().replace(/^#/, "").toUpperCase()
       : undefined;
 
-  const originalImage = saveBgRemoveImage(
+  // Generate ID only once
+  const bgRemovePhotoId = await generateBgRemovePhotoId();
+
+  // Save original image
+  const originalImage = await saveBgRemoveImage(
     originalBuffer,
-    userId,
-    'original'
+    bgRemovePhotoId,
+    "original"
   );
 
+  // Create DB record
   const job = await BgRemove.create({
     userId,
+    bgRemovePhotoId,
     originalImage,
     bgColor: cleanBgColor,
     status: BG_REMOVE_STATUS.PROCESSING,
@@ -109,10 +66,10 @@ const createBgRemoveJob = async (
       cleanBgColor
     );
 
-    const processedImage = saveBgRemoveImage(
+    const processedImage = await saveBgRemoveImage(
       processedBuffer,
-      userId,
-      'processed'
+      bgRemovePhotoId,
+      "processed"
     );
 
     job.processedImage = processedImage;
@@ -123,7 +80,7 @@ const createBgRemoveJob = async (
     return job;
   } catch (error: any) {
     job.status = BG_REMOVE_STATUS.FAILED;
-    job.errorMessage = error?.message || 'Background removal failed';
+    job.errorMessage = error?.message || "Background removal failed";
 
     await job.save();
 
@@ -131,12 +88,19 @@ const createBgRemoveJob = async (
   }
 };
 
-const getBgRemoveJobById = async (jobId: string): Promise<BgRemoveDocument | null> => {
+const getBgRemoveJobById = async (
+  jobId: string
+): Promise<BgRemoveDocument | null> => {
   return BgRemove.findById(jobId);
 };
 
-const getMyBgRemoveJobs = async (userId: string, limit = 50): Promise<BgRemoveDocument[]> => {
-  return BgRemove.find({ userId }).sort({ createdAt: -1 }).limit(limit);
+const getMyBgRemoveJobs = async (
+  userId: string,
+  limit = 50
+): Promise<BgRemoveDocument[]> => {
+  return BgRemove.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(limit);
 };
 
 export const BgRemoveServices = {

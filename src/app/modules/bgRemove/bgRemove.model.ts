@@ -33,6 +33,11 @@ const bgRemoveSchema = new Schema<IBgRemove>(
     errorMessage: {
       type: String,
     },
+
+    bgRemovePhotoId: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

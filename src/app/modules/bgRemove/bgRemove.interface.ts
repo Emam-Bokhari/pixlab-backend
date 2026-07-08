@@ -19,6 +19,8 @@ export interface IBgRemove {
 
   createdAt: Date;
   updatedAt: Date;
+
+  bgRemovePhotoId?: string;
 }
 
 /**

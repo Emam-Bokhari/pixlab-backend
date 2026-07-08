@@ -10,6 +10,7 @@ router
   .route('/')
   .post(
     isAuthenticated,
+    // requireCredits('upscale'),
     fileUploadHandler(),
     parseFileData({
       fieldName: 'image',

@@ -20,6 +20,7 @@ export interface TUpscale {
   userId: Types.ObjectId;
   originalImage: string;
   upscaledImage?: string;
+  upscaledPhotoId?: string;
 
   original?: ImageDimensionInfo;
   upscaled?: ImageDimensionInfo;
