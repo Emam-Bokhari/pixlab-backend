@@ -30,7 +30,7 @@ export interface TUpscale {
 
   status: UPSCALE_STATUS;
   errorMessage?: string;
-  creditsUsed?: number;
+
 
   createdAt: Date;
 }

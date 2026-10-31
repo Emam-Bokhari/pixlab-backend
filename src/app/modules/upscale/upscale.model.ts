@@ -70,10 +70,6 @@ const upscaleSchema = new Schema<TUpscale>(
       type: String,
     },
 
-    creditsUsed: {
-      type: Number,
-    },
-
     createdAt: {
       type: Date,
       default: Date.now,

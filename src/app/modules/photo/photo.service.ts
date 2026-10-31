@@ -2,8 +2,8 @@ import axios from 'axios';
 import fs from 'fs';
 import sharp from 'sharp';
 import { Photo } from './photo.model';
-import { WalletServices } from '../wallet/wallet.service';
-import { CreditSetting } from '../creditSetting/creditSetting.model';
+
+
 import {
   bufferToBase64,
   downloadImageAsBuffer,
@@ -163,12 +163,12 @@ export const processPhoto = async (
     photo.pngUrl = singlePng;
     photo.status = PHOTO_STATUS.SUCCESS;
 
-    // Fetch setting and deduct credits
-    const setting = await CreditSetting.findOne({ key: 'photo_resize' });
-    const requiredCredits = setting ? setting.credits : 1;
-    await WalletServices.deductCreditsForOperation(userId, 'photo_resize', { photoId: photo._id });
 
-    photo.creditsUsed = requiredCredits;
+
+
+
+
+
     photo.expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
     await photo.save();

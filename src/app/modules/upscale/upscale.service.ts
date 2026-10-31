@@ -141,7 +141,7 @@ const upscaleImage = async (userId: string, file?: Express.Multer.File): Promise
       upscaleDoc.warning = warningMessage;
     }
     upscaleDoc.status = UPSCALE_STATUS.SUCCESS;
-    upscaleDoc.creditsUsed = 5;
+
 
     await upscaleDoc.save();
 

@@ -5,7 +5,7 @@ import {
   IBlockAccount,
   IContact,
   ICreateAccount,
-  IHelpReplay,
+
   IResetPassword,
   IResetPasswordByEmail,
 } from '../types/emailTemplate';
@@ -112,7 +112,7 @@ const resetPasswordByUrl = (values: IResetPasswordByEmail): ISendEmail => {
 const supportFormTemplate = (values: TSupport): ISendEmail => {
   return {
     from: config.email.from,
-    to: config.support_email!, // admin/support inbox
+    to: config.support_email!, // support inbox
     subject: values.subject?.trim()
       ? `Support: ${values.subject.trim()}`
       : `New Support Request from ${values.name}`,
@@ -145,42 +145,6 @@ const supportFormTemplate = (values: TSupport): ISendEmail => {
   };
 };
 
-const helpReplyTemplate = (values: IHelpReplay, adminMessage: string): ISendEmail => {
-  const data = {
-    from: config.email.from,
-    to: values.email,
-    subject: 'Response to Your Help Request',
-    html: `<body style="font-family: 'Roboto', sans-serif; background-color: #f3f3f3; margin: 0; padding: 0; color: #333;">
-  <div style="max-width: 650px; margin: 40px auto; background-color: #fff; border-radius: 8px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); padding: 25px; color: #333;">
-    <img src="https://res.cloudinary.com/dreiyzj42/image/upload/v1762927212/sundarbanila_hp4s7g.png" alt="Logo" style="display: block; margin: 0 auto 20px; width: 150px;" />
-    
-    <div style="text-align: left; padding: 0 20px;">
-      <p style="font-size: 18px; color: #555; line-height: 1.6; margin-bottom: 15px;">Hello ${values.name},</p>
-      <p style="font-size: 16px; color: #555; line-height: 1.7; margin-bottom: 20px;">Thank you for reaching out! We’ve received your message and our team is working on it. Below are the details:</p>
-
-      <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
-        <p style="font-size: 16px; color: #333; font-weight: bold; margin-bottom: 10px;">Your Message:</p>
-        <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px;">"${values.message}"</p>
-      </div>
-
-      <div style="background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #388e3c;">
-        <p style="font-size: 16px; color: #333; font-weight: bold; margin-bottom: 10px;">Our Response:</p>
-        <p style="font-size: 16px; color: #388e3c; line-height: 1.6;">"${adminMessage}"</p>
-      </div>
-
-      <p style="font-size: 16px; color: #555; line-height: 1.7; margin-bottom: 20px;">If you have further questions or need additional assistance, feel free to reach out. We're here to help.</p>
-      
-      <div style="border-top: 1px solid #f1f1f1; padding-top: 20px; text-align: center;">
-        <p style="font-size: 14px; color: #888;">Best regards,</p>
-        <p style="font-size: 16px; font-weight: bold; color: #333;">Support Team</p>
-        <p style="font-size: 14px; color: #888;">Company Name | <a href="https://www.companywebsite.com" style="color: #2196F3; text-decoration: none;">www.companywebsite.com</a></p>
-      </div>
-    </div>
-  </div>
-</body>`,
-  };
-  return data;
-};
 
 const blockAccountTemplate = (values: IBlockAccount): ISendEmail => {
   const data = {
@@ -248,7 +212,6 @@ export const emailTemplate = {
   resetPasswordByUrl,
   supportFormTemplate,
   contact,
-  helpReplyTemplate,
   blockAccountTemplate,
   verifyOtpTemplate,
 };

@@ -1,4 +1,4 @@
-import mongoose, { Types } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 import { SUPPORT_STATUS } from './support.constant';
 
 export type TSupport = {

@@ -7,8 +7,7 @@ const bgRemoveSchema = new Schema<IBgRemove>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
+      required: false,
     },
 
     originalImage: {

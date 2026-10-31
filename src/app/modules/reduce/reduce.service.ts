@@ -5,7 +5,7 @@ import { HttpError } from '../../errors/HttpError';
 import { Reduce } from './reduce.model';
 import { ReduceDocument } from './reduce.interface';
 import { compressImageToTargetSize, saveReducedImage, getImageSizeInfo } from './reduce.utils';
-import { WalletServices } from '../wallet/wallet.service';
+
 import { User } from '../user/user.model';
 
 import path from 'path';
@@ -83,8 +83,8 @@ const reduceImageSize = async (
 
   await reduceRecord.save();
 
-  // Deduct credits for the reduce operation
-  // await WalletServices.deductCreditsForOperation(userId, 'reduce');
+
+
 
   return reduceRecord;
 };

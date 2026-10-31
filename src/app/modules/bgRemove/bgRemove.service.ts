@@ -9,7 +9,7 @@ import { saveBgRemoveImage } from "./bgRemove.utils";
 import { generateBgRemovePhotoId } from "../../utils/generateYearBasedId";
 
 const createBgRemoveJob = async (
-  userId: string,
+  userId: string | undefined,
   data: any
 ): Promise<BgRemoveDocument> => {
   if (!data.image) {
@@ -95,10 +95,11 @@ const getBgRemoveJobById = async (
 };
 
 const getMyBgRemoveJobs = async (
-  userId: string,
+  userId?: string,
   limit = 50
 ): Promise<BgRemoveDocument[]> => {
-  return BgRemove.find({ userId })
+  const filter = userId ? { userId } : {};
+  return BgRemove.find(filter)
     .sort({ createdAt: -1 })
     .limit(limit);
 };

@@ -2,13 +2,11 @@ import { Router } from 'express';
 import { BgRemoveControllers } from './bgRemove.controller';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import { parseFileData } from '../../middlewares/parseFileData';
-import { isAuthenticated } from '../../helpers/auth.helper';
 
 const router = Router();
 
 router.post(
   '/',
-  isAuthenticated,
   fileUploadHandler(),
   parseFileData({
     fieldName: 'image',
@@ -16,7 +14,8 @@ router.post(
   }),
   BgRemoveControllers.createBgRemoveJob,
 );
-router.get('/', isAuthenticated, BgRemoveControllers.getMyBgRemoveJobs);
-router.get('/:jobId', isAuthenticated, BgRemoveControllers.getBgRemoveJobById);
+
+router.get('/', BgRemoveControllers.getMyBgRemoveJobs);
+router.get('/:jobId', BgRemoveControllers.getBgRemoveJobById);
 
 export const BgRemoveRoutes = router;

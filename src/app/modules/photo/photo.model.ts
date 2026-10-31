@@ -120,10 +120,6 @@ const photoSchema = new Schema<IPhoto>(
       type: String,
     },
 
-    creditsUsed: {
-      type: Number,
-    },
-
     isDownloaded: {
       type: Boolean,
       default: false,

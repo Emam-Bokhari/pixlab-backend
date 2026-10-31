@@ -38,7 +38,7 @@ export interface IPhoto extends PhotoInput {
   printLayoutImage?: string | undefined;
   status: PHOTO_STATUS;
   errorMessage?: string;
-  creditsUsed?: number;
+
   isDownloaded: boolean;
   pngUrl: String;
   jpgUrl: String;

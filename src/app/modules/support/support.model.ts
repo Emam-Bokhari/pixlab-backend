@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { SUPPORT_STATUS } from './support.constant';
 import { TSupport } from './support.interface';
 import { softDeletePlugin } from '../../DB/plugins/softDelete.plugin';
@@ -39,7 +39,7 @@ const supportSchema = new Schema<TSupport>(
 
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+
       index: true,
       default: null,
     },

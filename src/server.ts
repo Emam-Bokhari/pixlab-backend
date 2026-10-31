@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import { Server as SocketIOServer } from 'socket.io';
 import app from './app';
 import config from './app/config';
-import seedSuperAdmin from './app/DB';
 import { socketHelper } from './app/helpers/socketHelper';
 import { errorLogger, logger } from './app/shared/logger';
 import { emailWorker, emailQueue } from './queues/index';
@@ -62,13 +61,6 @@ async function main() {
     await mongoose.connect(config.database_url as string);
 
     logger.info('🐘 Database connected successfully');
-
-    // seed admin
-    await seedSuperAdmin();
-
-    // seed default credit settings
-    const { CreditSettingServices } = require('./app/modules/creditSetting/creditSetting.service');
-    await CreditSettingServices.seedDefaultCreditSettings();
 
     // create HTTP server
     server = http.createServer(app);

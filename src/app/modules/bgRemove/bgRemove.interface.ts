@@ -3,7 +3,7 @@ import { BG_REMOVE_STATUS } from './bgRemove.constant';
 
 
 export interface IBgRemove {
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId | string;
 
   /** Path/URL of the originally uploaded image */
   originalImage: string;

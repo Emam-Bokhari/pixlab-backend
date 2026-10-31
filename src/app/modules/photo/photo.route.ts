@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import { PhotoControllers } from './photo.controller';
-import { isAuthenticated } from '../../helpers/auth.helper';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import { parseFileData } from '../../middlewares/parseFileData';
-import { requireCredits } from '../../middlewares/creditCheck.middleware';
 
 const router = Router();
 
 router
   .route('/')
   .post(
-    isAuthenticated,
-    requireCredits('photo_resize'),
     fileUploadHandler(),
     parseFileData({
       fieldName: 'originalImage',
@@ -19,14 +15,14 @@ router
     }),
     PhotoControllers.createPhoto,
   )
-  .get(isAuthenticated, PhotoControllers.getAllPhotos);
+  .get(PhotoControllers.getAllPhotos);
 
-router.post('/:photoId/print-layout', isAuthenticated, PhotoControllers.generatePrintLayout);
+router.post('/:photoId/print-layout', PhotoControllers.generatePrintLayout);
 
-router.post('/:photoId/convert', isAuthenticated, PhotoControllers.convertPrintLayout);
+router.post('/:photoId/convert', PhotoControllers.convertPrintLayout);
 
-router.post('/:photoId/pdf', isAuthenticated, PhotoControllers.generatePdf);
+router.post('/:photoId/pdf', PhotoControllers.generatePdf);
 
-router.patch('/:photoId/regenerate', isAuthenticated, PhotoControllers.regeneratePrintLayout);
+router.patch('/:photoId/regenerate', PhotoControllers.regeneratePrintLayout);
 
 export const PhotoRoutes = router;
