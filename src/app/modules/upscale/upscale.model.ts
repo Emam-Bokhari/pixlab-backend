@@ -27,8 +27,7 @@ const upscaleSchema = new Schema<TUpscale>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
+      required: false,
     },
 
     originalImage: {

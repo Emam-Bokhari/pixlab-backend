@@ -23,7 +23,7 @@ export const downloadImageAsBuffer = async (url: string): Promise<Buffer> => {
  */
 export const downloadAndSaveProcessedImage = async (
   buffer: Buffer,
-  userId: string,
+  userId?: string,
   photoType: string,
   variant: 'png' | 'jpg' | 'webp' | 'layout',
   dpi: number = DPI,
@@ -45,7 +45,7 @@ export const downloadAndSaveProcessedImage = async (
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   const ext = variant === 'jpg' ? 'jpg' : variant === 'webp' ? 'webp' : 'png';
-  const fileName = `${userId}-${photoType}-${variant}-${Date.now()}.${ext}`;
+  const fileName = `-${photoType}-${variant}-${Date.now()}.${ext}`;
   const filePath = path.join(dir, fileName);
   fs.writeFileSync(filePath, finalBuffer);
 
@@ -73,14 +73,14 @@ export const readSavedFileBuffer = (publicUrl: string): Buffer => {
  */
 export const downloadAndSavePdf = async (
   buffer: Buffer,
-  userId: string,
+  userId?: string,
   photoType: string,
 ): Promise<string> => {
   const folderName = 'processedImage';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  const fileName = `${userId}-${photoType}-layout-${Date.now()}.pdf`;
+  const fileName = `-${photoType}-layout-${Date.now()}.pdf`;
   const filePath = path.join(dir, fileName);
 
   fs.writeFileSync(filePath, buffer);

@@ -101,7 +101,7 @@ const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 export const downloadAndSaveProcessedImage = async (
   input: Buffer | string, // Buffer or URL
-  userId: string,
+  userId: string = 'snap',
   photoType: string,
   variant: 'png' | 'jpg' | 'webp' | 'layout' | 'single',
 ): Promise<string> => {
@@ -156,7 +156,7 @@ export const downloadAndSaveProcessedImage = async (
 
   // File name
   const ext = variant === 'jpg' ? 'jpg' : variant === 'webp' ? 'webp' : 'png';
-  const fileName = `${userId}-${photoType}-${variant}-${Date.now()}.${ext}`;
+  const fileName = `-${photoType}-${variant}-${Date.now()}.${ext}`;
   const filePath = path.join(dir, fileName);
 
   // সেভ

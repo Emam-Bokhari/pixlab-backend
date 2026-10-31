@@ -20,14 +20,13 @@ export const getImageDimensionInfo = async (buffer: Buffer): Promise<ImageDimens
   };
 };
 
-export const saveOriginalImage = async (buffer: Buffer, userId: string): Promise<string> => {
+export const saveOriginalImage = async (buffer: Buffer, _userId?: string): Promise<string> => {
   const folderName = 'resize-original';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   const metadata = await sharp(buffer).metadata();
   const ext = metadata.format || 'png';
-  // const fileName = `${userId}-original-${Date.now()}.${ext}`;
   const resizedPhotoId = await generateResizedPhotoId();
   const fileName = `${resizedPhotoId}.${ext}`;
   const filePath = path.join(dir, fileName);
@@ -38,16 +37,16 @@ export const saveOriginalImage = async (buffer: Buffer, userId: string): Promise
 
 export const saveResizedImage = async (
   buffer: Buffer,
-  userId: string,
-  format: string,
+  _userId?: string,
+  format?: string,
 ): Promise<string> => {
   const folderName = 'resize';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  // const fileName = `${userId}-resized-${Date.now()}.${format}`;
   const resizedPhotoId = await generateResizedPhotoId();
-  const fileName = `${resizedPhotoId}.${format}`;
+  const ext = format === 'jpeg' ? 'jpg' : (format || 'png');
+  const fileName = `${resizedPhotoId}.${ext}`;
   const filePath = path.join(dir, fileName);
   fs.writeFileSync(filePath, buffer);
 

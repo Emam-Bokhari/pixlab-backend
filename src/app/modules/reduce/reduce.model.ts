@@ -33,8 +33,7 @@ const reduceSchema = new Schema<IReduce>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
+      required: false,
     },
     originalImageName: {
       type: String,

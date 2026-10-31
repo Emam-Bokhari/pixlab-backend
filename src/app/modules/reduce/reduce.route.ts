@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { ReduceControllers } from './reduce.controller';
-import { isAuthenticated } from '../../helpers/auth.helper';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import { parseFileData } from '../../middlewares/parseFileData';
 import { validateRequestSchema } from '../../middlewares/validateRequestSchema';
@@ -10,8 +9,6 @@ const router = Router();
 
 router.post(
   '/',
-  isAuthenticated,
-
   fileUploadHandler(),
   parseFileData({
     fieldName: 'image',
@@ -21,6 +18,6 @@ router.post(
   ReduceControllers.reducePhoto,
 );
 
-router.get('/', isAuthenticated, ReduceControllers.getAllReducedImages);
+router.get('/', ReduceControllers.getAllReducedImages);
 
 export const ReduceRoutes = router;

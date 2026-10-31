@@ -17,7 +17,7 @@ export interface UpscaleIncreaseInfo {
 }
 
 export interface TUpscale {
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId | string;
   originalImage: string;
   upscaledImage?: string;
   upscaledPhotoId?: string;

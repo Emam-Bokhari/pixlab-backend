@@ -9,7 +9,7 @@ export interface ImageSizeInfo {
 }
 
 export interface IReduce {
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId | string;
   originalImageName: string;
   reducedImageUrl: string;
   original: ImageSizeInfo;

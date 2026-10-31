@@ -3,7 +3,7 @@ import sendResponse from '../../shared/sendResponse';
 import { ResizeServices } from './resize.service';
 
 const resizePhoto = catchAsync(async (req, res) => {
-  const { id: userId } = req.user as { id: string };
+  const userId = (req as any).user?.id;
   const files = (req.files || {}) as any;
   const file = files?.image?.[0];
 
@@ -27,7 +27,7 @@ const resizePhoto = catchAsync(async (req, res) => {
 });
 
 const getAllResizes = catchAsync(async (req, res) => {
-  const { id: userId } = req.user as { id: string };
+  const userId = (req as any).user?.id;
 
   const result = await ResizeServices.getAllResizesForUser(userId);
 

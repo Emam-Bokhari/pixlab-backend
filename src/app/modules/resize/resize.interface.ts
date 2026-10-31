@@ -18,7 +18,7 @@ export interface ResizeParams {
 }
 
 export interface IResize {
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId | string;
   originalImage: string;
   resizedImage?: string;
 

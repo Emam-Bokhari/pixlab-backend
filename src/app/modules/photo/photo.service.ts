@@ -2,8 +2,6 @@ import axios from 'axios';
 import fs from 'fs';
 import sharp from 'sharp';
 import { Photo } from './photo.model';
-
-
 import {
   bufferToBase64,
   downloadImageAsBuffer,
@@ -22,7 +20,6 @@ import { renderLayoutPdf } from './pdf/pdf.renderPdf';
 import { LayoutResult } from './layouts/layouts.type';
 import { HttpError } from '../../errors/HttpError';
 import { photoQueue } from '../../../queues';
-import { User } from '../user/user.model';
 
 // ---------------------------------------------------------------------
 // STEP 1 — base endpoint. Only talks to Cutout Pro and saves the single
@@ -103,7 +100,7 @@ const createPhotoToDB = async (
 // Background processing function for Cutout Pro
 export const processPhoto = async (
   photoId: string,
-  userId: string,
+  userId?: string,
   bgColor: string,
   sizeInfo: { name: string; mmWidth: number; mmHeight: number },
   filePath: string | null,
@@ -281,16 +278,12 @@ export const ensurePrintLayoutBuffer = async (
 // ---------------------------------------------------------------------
 const generatePrintLayout = async (
   photoId: string,
-  userId: string,
   override?: LayoutOverride,
 ): Promise<PhotoDocument> => {
   const photo = await Photo.findById(photoId);
 
   if (!photo || !photo.idPhotoImage)
     throw new HttpError(404, 'Photo not found or base image not generated yet');
-
-  if (String(photo.userId) !== userId)
-    throw new HttpError(403, 'Not authorized to access this photo');
 
   const originalCopies = photo.copies;
   const originalPaperSize = photo.paperSize;
@@ -314,16 +307,12 @@ const generatePrintLayout = async (
 // ---------------------------------------------------------------------
 const convertPrintLayout = async (
   photoId: string,
-  userId: string,
   override?: LayoutOverride,
 ): Promise<{ pngUrl: string; jpgUrl: string; webpUrl: string }> => {
   const photo = await Photo.findById(photoId);
 
   if (!photo || !photo.idPhotoImage)
     throw new HttpError(404, 'Photo not found or base image not generated yet');
-
-  if (String(photo.userId) !== userId)
-    throw new HttpError(403, 'Not authorized to access this photo');
 
   const { layoutBuffer } = await ensurePrintLayoutBuffer(photo, override);
 
@@ -345,16 +334,12 @@ const convertPrintLayout = async (
 // ---------------------------------------------------------------------
 const generatePdf = async (
   photoId: string,
-  userId: string,
   override?: LayoutOverride,
 ): Promise<string> => {
   const photo = await Photo.findById(photoId);
 
   if (!photo || !photo.idPhotoImage)
     throw new HttpError(404, 'Photo not found or base image not generated yet');
-
-  if (String(photo.userId) !== userId)
-    throw new HttpError(403, 'Not authorized to access this photo');
 
   const originalCopies = photo.copies;
   const originalPaperSize = photo.paperSize;
@@ -391,7 +376,6 @@ const generatePdf = async (
 // ---------------------------------------------------------------------
 const regeneratePrintLayoutLocal = async (
   photoId: string,
-  userId: string,
   newCopies: number | string,
   paperSize?: PAPER_SIZE,
 ): Promise<PhotoDocument> => {
@@ -405,9 +389,6 @@ const regeneratePrintLayoutLocal = async (
 
   if (!photo || !photo.idPhotoImage)
     throw new HttpError(404, 'Photo not found or base image not generated yet');
-
-  if (String(photo.userId) !== userId)
-    throw new HttpError(403, 'Not authorized to access this photo');
 
   const resolvedPaperSize = paperSize ?? (photo.paperSize as PAPER_SIZE) ?? PAPER_SIZE.FOUR_R;
 
@@ -431,18 +412,9 @@ const regeneratePrintLayoutLocal = async (
   return photo;
 };
 
-const getAllPhotosForUser = async (userId: string) => {
-  // check if the user exists
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new HttpError(404, 'User not found');
-  }
-
-  const photos = await Photo.find({ userId }).sort({ createdAt: -1 }).exec();
-  // check if the user has any photos
-  if (photos.length === 0) {
-    throw new HttpError(404, 'No photos found for this user');
-  }
+const getAllPhotosForUser = async (userId?: string) => {
+  const filter = userId ? { userId } : {};
+  const photos = await Photo.find(filter).sort({ createdAt: -1 }).exec();
   return photos;
 };
 

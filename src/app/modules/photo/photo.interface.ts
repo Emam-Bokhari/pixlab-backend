@@ -9,7 +9,7 @@ export interface SizeInfo {
 }
 
 export interface PhotoInput {
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId | string;
   originalImage: string;
   country?: string;
   photoType: PHOTO_TYPE;

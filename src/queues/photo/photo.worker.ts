@@ -19,7 +19,7 @@ export const photoWorker = new Worker(
     }
 
     if (job.name === 'regenerateFormats') {
-      const { photoId, userId } = job.data;
+      const { photoId } = job.data;
 
       const photo = await Photo.findById(photoId);
 
@@ -27,19 +27,16 @@ export const photoWorker = new Worker(
         throw new Error('Photo not found or base image not generated yet');
       }
 
-      if (String(photo.userId) !== userId) {
-        throw new Error('Not authorized to access this photo');
-      }
-
       const { layoutBuffer, layout } = await ensurePrintLayoutBuffer(photo);
+      const userTag = photo.userId ? String(photo.userId) : 'snap';
 
       const [jpgUrl, webpUrl] = await Promise.all([
-        downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'jpg'),
-        downloadAndSaveProcessedImage(layoutBuffer, String(photo.userId), photo.photoType, 'webp'),
+        downloadAndSaveProcessedImage(layoutBuffer, userTag, photo.photoType, 'jpg'),
+        downloadAndSaveProcessedImage(layoutBuffer, userTag, photo.photoType, 'webp'),
       ]);
 
       const pdfBuffer = await renderLayoutPdf(layoutBuffer, layout);
-      const pdfUrl = await downloadAndSavePdf(pdfBuffer, String(photo.userId), photo.photoType);
+      const pdfUrl = await downloadAndSavePdf(pdfBuffer, userTag, photo.photoType);
 
       photo.jpgUrl = jpgUrl;
       photo.webpUrl = webpUrl;

@@ -19,7 +19,7 @@ const MAX_INPUT_DIMENSION = 4096;
 const MAX_FILE_SIZE_MB = 15;
 const APPROX_MAX_OUTPUT_MEGAPIXELS = 4.5;
 
-const upscaleImage = async (userId: string, file?: Express.Multer.File): Promise<TUpscale> => {
+const upscaleImage = async (userId?: string, file?: Express.Multer.File): Promise<TUpscale> => {
   if (!file) throw new HttpError(400, 'No file provided');
 
   if (!config.cutout_pro_upscale_api_url || !config.cutout_pro_api_key) {
@@ -54,7 +54,7 @@ const upscaleImage = async (userId: string, file?: Express.Multer.File): Promise
     throw new HttpError(400, err.message || 'Invalid or unsupported image file');
   }
 
-  const originalImagePath = await saveOriginalImage(originalBuffer, userId);
+  const originalImagePath = await saveOriginalImage(originalBuffer, userId || 'public');
 
   const upscaleDoc = new Upscale({
     userId,
@@ -101,7 +101,7 @@ const upscaleImage = async (userId: string, file?: Express.Multer.File): Promise
 
     const upscaledBuffer = await downloadImageAsBuffer(result.data.imageUrl);
     const upscaledInfo = await getImageDimensionInfo(upscaledBuffer);
-    const upscaledImageUrl = await saveUpscaledImage(upscaledBuffer, userId);
+    const upscaledImageUrl = await saveUpscaledImage(upscaledBuffer, userId || 'public');
 
     const widthPercent = originalInfo.widthPx
       ? Number(
@@ -154,11 +154,9 @@ const upscaleImage = async (userId: string, file?: Express.Multer.File): Promise
   }
 };
 
-const getAllUpscalesForUser = async (userId: string) => {
-  const upscales = await Upscale.find({ userId }).sort({ createdAt: -1 }).exec();
-  if (upscales.length === 0) {
-    throw new HttpError(404, 'No upscaled images found for this user');
-  }
+const getAllUpscalesForUser = async (userId?: string) => {
+  const filter = userId ? { userId } : {};
+  const upscales = await Upscale.find(filter).sort({ createdAt: -1 }).exec();
   return upscales;
 };
 
