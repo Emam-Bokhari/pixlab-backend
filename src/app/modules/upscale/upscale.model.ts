@@ -25,11 +25,6 @@ const increaseInfoSchema = new Schema(
 
 const upscaleSchema = new Schema<TUpscale>(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: false,
-    },
-
     originalImage: {
       type: String,
       required: true,
@@ -51,12 +46,14 @@ const upscaleSchema = new Schema<TUpscale>(
       type: increaseInfoSchema,
     },
 
-    didUpscale: {
-      type: Boolean,
+    scale: {
+      type: Number,
+      default: 2,
     },
 
-    warning: {
-      type: String,
+    didUpscale: {
+      type: Boolean,
+      default: true,
     },
 
     status: {
@@ -85,7 +82,7 @@ const upscaleSchema = new Schema<TUpscale>(
   },
 );
 
-upscaleSchema.index({ userId: 1, createdAt: -1 });
+upscaleSchema.index({ createdAt: -1 });
 upscaleSchema.index({ status: 1 });
 
 export const Upscale = mongoose.model<TUpscale>('Upscale', upscaleSchema);

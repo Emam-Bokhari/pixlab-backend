@@ -31,10 +31,6 @@ const imageSizeInfoSchema = new Schema(
 
 const reduceSchema = new Schema<IReduce>(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: false,
-    },
     originalImageName: {
       type: String,
       required: true,
@@ -77,6 +73,5 @@ const reduceSchema = new Schema<IReduce>(
   },
 );
 
-reduceSchema.index({ userId: 1, createdAt: -1 });
 
 export const Reduce = model<IReduce>('Reduce', reduceSchema);

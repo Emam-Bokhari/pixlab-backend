@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { SUPPORT_STATUS } from './support.constant';
-import { objectIdSchema } from '../../utils/objectIdSchema';
 
 const SUPPORT_STATUS_VALUES = Object.values(SUPPORT_STATUS) as [string, ...string[]];
 
@@ -25,8 +24,6 @@ const createSupportZodSchema = z.object({
       .string({ message: 'Message is required' })
       .min(10, 'Message must be at least 10 characters')
       .max(2000, 'Message is too long'),
-
-    userId: objectIdSchema.optional(),
 
     status: z
       .enum(SUPPORT_STATUS_VALUES, {

@@ -111,7 +111,6 @@ export const compressImageToTargetSize = async (
 
 export const saveReducedImage = async (
   buffer: Buffer,
-  userId: string,
   format: string,
 ): Promise<string> => {
   const folderName = 'reduce';
@@ -121,7 +120,6 @@ export const saveReducedImage = async (
   }
 
   const ext = format === 'jpeg' ? 'jpg' : format;
-  // const fileName = `${userId}-reduce-${Date.now()}.${ext}`;
   const reducedPhotoId = await generateReducedPhotoId();
   const fileName = `${reducedPhotoId}.${ext}`;
   const filePath = path.join(dir, fileName);

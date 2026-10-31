@@ -1,13 +1,9 @@
-import mongoose from 'mongoose';
 import { emailTemplate } from '../../shared/emailTemplate';
 import { TSupport } from './support.interface';
 import { Support } from './support.model';
 import { emailQueue } from '../../../queues';
 
-const createSupportToDB = async (payload: TSupport, userId?: string) => {
-  if (userId) {
-    payload.userId = new mongoose.Types.ObjectId(userId);
-  }
+const createSupportToDB = async (payload: TSupport) => {
   const result = await Support.create(payload);
 
   if (!result) {

@@ -3,9 +3,7 @@ import sendResponse from '../../shared/sendResponse';
 import { SupportServices } from './support.service';
 
 const createSupport = catchAsync(async (req, res) => {
-  const userId = (req as any).user?.id;
-
-  const result = await SupportServices.createSupportToDB(req.body, userId);
+  const result = await SupportServices.createSupportToDB(req.body);
 
   sendResponse(res, {
     success: true,

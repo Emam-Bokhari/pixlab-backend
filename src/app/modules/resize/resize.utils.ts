@@ -20,7 +20,7 @@ export const getImageDimensionInfo = async (buffer: Buffer): Promise<ImageDimens
   };
 };
 
-export const saveOriginalImage = async (buffer: Buffer, _userId?: string): Promise<string> => {
+export const saveOriginalImage = async (buffer: Buffer): Promise<string> => {
   const folderName = 'resize-original';
   const dir = path.join(BASE_UPLOAD_DIR, folderName);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -37,7 +37,6 @@ export const saveOriginalImage = async (buffer: Buffer, _userId?: string): Promi
 
 export const saveResizedImage = async (
   buffer: Buffer,
-  _userId?: string,
   format?: string,
 ): Promise<string> => {
   const folderName = 'resize';

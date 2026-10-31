@@ -37,13 +37,6 @@ const supportSchema = new Schema<TSupport>(
       maxlength: [2000, 'Message is too long'],
     },
 
-    userId: {
-      type: Schema.Types.ObjectId,
-
-      index: true,
-      default: null,
-    },
-
     status: {
       type: String,
       enum: Object.values(SUPPORT_STATUS),
@@ -64,7 +57,6 @@ const supportSchema = new Schema<TSupport>(
 );
 
 supportSchema.index({ email: 1, status: 1 });
-supportSchema.index({ userId: 1, status: 1 });
 supportSchema.index({ createdAt: -1 });
 
 supportSchema.plugin(softDeletePlugin);

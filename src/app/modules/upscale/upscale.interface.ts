@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { UPSCALE_STATUS } from './upscale.constant';
 
 export interface ImageDimensionInfo {
@@ -17,7 +16,6 @@ export interface UpscaleIncreaseInfo {
 }
 
 export interface TUpscale {
-  userId?: Types.ObjectId | string;
   originalImage: string;
   upscaledImage?: string;
   upscaledPhotoId?: string;
@@ -25,12 +23,11 @@ export interface TUpscale {
   original?: ImageDimensionInfo;
   upscaled?: ImageDimensionInfo;
   increase?: UpscaleIncreaseInfo;
+  scale?: number;
   didUpscale?: boolean;
-  warning?: string;
 
   status: UPSCALE_STATUS;
   errorMessage?: string;
-
 
   createdAt: Date;
 }

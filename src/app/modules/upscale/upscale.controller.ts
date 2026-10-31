@@ -3,11 +3,11 @@ import sendResponse from '../../shared/sendResponse';
 import { UpscaleServices } from './upscale.service';
 
 const upscalePhoto = catchAsync(async (req, res) => {
-  const userId = (req as any).user?.id;
   const files = (req.files || {}) as any;
   const file = files?.image?.[0];
+  const scale = req.body?.scale ? Number(req.body.scale) : 2;
 
-  const result = await UpscaleServices.upscaleImage(userId, file);
+  const result = await UpscaleServices.upscaleImage(file, scale);
 
   sendResponse(res, {
     success: true,
@@ -18,9 +18,7 @@ const upscalePhoto = catchAsync(async (req, res) => {
 });
 
 const getAllUpscales = catchAsync(async (req, res) => {
-  const userId = (req as any).user?.id;
-
-  const result = await UpscaleServices.getAllUpscalesForUser(userId);
+  const result = await UpscaleServices.getAllUpscales();
 
   sendResponse(res, {
     success: true,

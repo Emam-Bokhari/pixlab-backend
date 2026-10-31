@@ -1,6 +1,5 @@
 import fs from 'fs';
 import sharp from 'sharp';
-import mongoose from 'mongoose';
 import { HttpError } from '../../errors/HttpError';
 import { Reduce } from './reduce.model';
 import { ReduceDocument } from './reduce.interface';
@@ -10,7 +9,6 @@ import path from 'path';
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
 
 const reduceImageSize = async (
-  userId: string | undefined,
   data: { targetSizeKb: number; image: string },
 ): Promise<ReduceDocument> => {
   const { targetSizeKb, image } = data;
@@ -46,7 +44,6 @@ const reduceImageSize = async (
   // Save the reduced image
   const reducedImageUrl = await saveReducedImage(
     compressionResult.buffer,
-    userId || 'public',
     compressionResult.format,
   );
 
@@ -62,7 +59,6 @@ const reduceImageSize = async (
 
   // Save to database
   const reduceRecord = new Reduce({
-    userId: userId && mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : undefined,
     originalImageName: path.basename(image),
     reducedImageUrl,
     original: originalInfo,
@@ -77,13 +73,12 @@ const reduceImageSize = async (
   return reduceRecord;
 };
 
-const getAllReducedImagesForUser = async (userId?: string) => {
-  const filter = userId && mongoose.Types.ObjectId.isValid(userId) ? { userId } : {};
-  const records = await Reduce.find(filter).sort({ createdAt: -1 }).exec();
+const getAllReducedImages = async () => {
+  const records = await Reduce.find().sort({ createdAt: -1 }).exec();
   return records;
 };
 
 export const ReduceServices = {
   reduceImageSize,
-  getAllReducedImagesForUser,
+  getAllReducedImages,
 };

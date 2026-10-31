@@ -15,7 +15,7 @@ router.post(
   BgRemoveControllers.createBgRemoveJob,
 );
 
-router.get('/', BgRemoveControllers.getMyBgRemoveJobs);
+router.get('/', BgRemoveControllers.getAllBgRemoveJobs);
 router.get('/:jobId', BgRemoveControllers.getBgRemoveJobById);
 
 export const BgRemoveRoutes = router;

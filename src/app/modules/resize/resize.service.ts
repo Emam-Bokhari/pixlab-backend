@@ -32,11 +32,6 @@ const validateTargetDimensions = (width: number, height: number) => {
   }
 };
 
-/**
- * fit/cropStrategy এখন আর বাইরে থেকে আসে না — সবসময় DEFAULT_RESIZE_FIT (cover)
- * আর DEFAULT_CROP_STRATEGY (attention) ব্যবহার হয়। এতে user শুধু width/height
- * দিয়েই কাজ চালাতে পারে, কোনো technical option নিয়ে confuse হতে হয় না।
- */
 const performResize = async (
   buffer: Buffer,
   width: number,
@@ -80,7 +75,6 @@ const performResize = async (
 };
 
 const resizeImage = async (
-  userId: string = 'public',
   input: ResizeRequestInput,
   file?: Express.Multer.File,
 ): Promise<ResizeDocument> => {
@@ -115,11 +109,10 @@ const resizeImage = async (
   const { width, height } = input;
   validateTargetDimensions(width, height);
 
-  const originalImagePath = await saveOriginalImage(originalBuffer, userId);
+  const originalImagePath = await saveOriginalImage(originalBuffer);
   const originalInfo = await getImageDimensionInfo(originalBuffer);
 
   const resizeDoc = new Resize({
-    userId,
     originalImage: originalImagePath,
     original: originalInfo,
     resizeParams: {
@@ -139,7 +132,7 @@ const resizeImage = async (
     const { buffer: resizedBuffer, format } = await performResize(originalBuffer, width, height);
 
     const resizedInfo = await getImageDimensionInfo(resizedBuffer);
-    const resizedImageUrl = await saveResizedImage(resizedBuffer, userId, format);
+    const resizedImageUrl = await saveResizedImage(resizedBuffer, format);
 
     resizeDoc.resizedImage = resizedImageUrl;
     resizeDoc.resized = resizedInfo;
@@ -155,15 +148,12 @@ const resizeImage = async (
   }
 };
 
-const getAllResizesForUser = async (userId: string) => {
-  const resizes = await Resize.find({ userId }).sort({ createdAt: -1 }).exec();
-  if (resizes.length === 0) {
-    throw new HttpError(404, 'No resized images found for this user');
-  }
+const getAllResizes = async () => {
+  const resizes = await Resize.find().sort({ createdAt: -1 }).exec();
   return resizes;
 };
 
 export const ResizeServices = {
   resizeImage,
-  getAllResizesForUser,
+  getAllResizes,
 };

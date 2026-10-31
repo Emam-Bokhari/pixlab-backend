@@ -26,11 +26,6 @@ const resizeParamsSchema = new Schema(
 
 const resizeSchema = new Schema<IResize>(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: false,
-    },
-
     originalImage: {
       type: String,
       required: true,
@@ -79,7 +74,7 @@ const resizeSchema = new Schema<IResize>(
   },
 );
 
-resizeSchema.index({ userId: 1, createdAt: -1 });
+resizeSchema.index({ createdAt: -1 });
 resizeSchema.index({ status: 1 });
 
 export const Resize = mongoose.model<IResize>('Resize', resizeSchema);

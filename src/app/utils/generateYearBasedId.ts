@@ -1,6 +1,5 @@
 import { Model } from "mongoose";
 import { BgRemove } from "../modules/bgRemove/bgRemove.model";
-import { Photo } from "../modules/photo/photo.model";
 import { Reduce } from "../modules/reduce/reduce.model";
 import { Resize } from "../modules/resize/resize.model";
 import { Upscale } from "../modules/upscale/upscale.model";
@@ -25,9 +24,10 @@ const generateYearBasedId = async (
     const parts = lastId.split("-");
 
     // Works for:
-    // PHOTO-2026-0001
     // REDUCED-PHOTO-2026-0001
     // BG-REMOVE-PHOTO-2026-0001
+    // UPSCALED-PHOTO-2026-0001
+    // RESIZED-PHOTO-2026-0001
     const lastYear = parts[parts.length - 2];
     const lastSequence = parts[parts.length - 1];
 
@@ -42,10 +42,6 @@ const generateYearBasedId = async (
 
   return `${prefix}-${currentYear}-${String(nextNumber).padStart(4, "0")}`;
 };
-
-// PHOTO
-export const generatePhotoId = () =>
-  generateYearBasedId(Photo, "photoId", "PHOTO");
 
 // REDUCED PHOTO
 export const generateReducedPhotoId = () =>

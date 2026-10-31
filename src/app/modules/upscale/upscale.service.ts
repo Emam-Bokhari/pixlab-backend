@@ -1,30 +1,80 @@
 import fs from 'fs';
 import sharp from 'sharp';
-import axios from 'axios';
-import FormData from 'form-data';
-import config from '../../config';
 import { HttpError } from '../../errors/HttpError';
 import { UPSCALE_STATUS } from './upscale.constant';
 import {
-  downloadImageAsBuffer,
   saveOriginalImage,
   saveUpscaledImage,
   getImageDimensionInfo,
 } from './upscale.utils';
 import { TUpscale } from './upscale.interface';
 import { Upscale } from './upscale.model';
+import { generateUpscalePhotoId } from '../../utils/generateYearBasedId';
 
-const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
-const MAX_INPUT_DIMENSION = 4096;
-const MAX_FILE_SIZE_MB = 15;
-const APPROX_MAX_OUTPUT_MEGAPIXELS = 4.5;
+const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp', 'tiff', 'avif'];
+const MAX_FILE_SIZE_MB = 20;
 
-const upscaleImage = async (userId?: string, file?: Express.Multer.File): Promise<TUpscale> => {
+const performUpscale = async (
+  buffer: Buffer,
+  scale: number,
+  originalFormat: string,
+): Promise<{ buffer: Buffer; format: string }> => {
+  const metadata = await sharp(buffer).metadata();
+  const originalWidth = metadata.width || 800;
+  const originalHeight = metadata.height || 600;
+
+  const targetWidth = Math.round(originalWidth * scale);
+  const targetHeight = Math.round(originalHeight * scale);
+
+  // Apply Lanczos3 high-quality resampling + unsharp masking for edge crispness
+  let pipeline = sharp(buffer)
+    .rotate()
+    .resize({
+      width: targetWidth,
+      height: targetHeight,
+      kernel: sharp.kernel.lanczos3,
+      fit: 'fill',
+    })
+    .sharpen({
+      sigma: 1.2,
+      m1: 1.0,
+      m2: 2.0,
+    });
+
+  let format = originalFormat.toLowerCase();
+  if (format === 'jpg') format = 'jpeg';
+
+  switch (format) {
+    case 'jpeg':
+      pipeline = pipeline.jpeg({ quality: 95, mozjpeg: true });
+      break;
+    case 'webp':
+      pipeline = pipeline.webp({ quality: 95, effort: 6 });
+      break;
+    case 'avif':
+      pipeline = pipeline.avif({ quality: 95 });
+      break;
+    case 'tiff':
+      pipeline = pipeline.tiff({ quality: 95 });
+      break;
+    default:
+      format = 'png';
+      pipeline = pipeline.png({ quality: 100, compressionLevel: 6 });
+      break;
+  }
+
+  const outputBuffer = await pipeline.toBuffer();
+  return { buffer: outputBuffer, format };
+};
+
+const upscaleImage = async (
+  file?: Express.Multer.File,
+  requestedScale: number = 2,
+): Promise<TUpscale> => {
   if (!file) throw new HttpError(400, 'No file provided');
 
-  if (!config.cutout_pro_upscale_api_url || !config.cutout_pro_api_key) {
-    throw new HttpError(500, 'Cutout Pro upscale configuration is missing');
-  }
+  const parsedScale = Number(requestedScale);
+  const scale = parsedScale >= 1 && parsedScale <= 4 ? parsedScale : 2;
 
   let originalBuffer: Buffer;
   if (file.buffer) originalBuffer = file.buffer;
@@ -40,68 +90,36 @@ const upscaleImage = async (userId?: string, file?: Express.Multer.File): Promis
   try {
     metadata = await sharp(originalBuffer).metadata();
     if (!metadata.format || !ALLOWED_FORMATS.includes(metadata.format.toLowerCase())) {
-      throw new Error('Unsupported image format. Allowed: PNG, JPG, JPEG, BMP, WEBP');
-    }
-    if (
-      (metadata.width && metadata.width > MAX_INPUT_DIMENSION) ||
-      (metadata.height && metadata.height > MAX_INPUT_DIMENSION)
-    ) {
-      throw new Error(
-        `Image resolution exceeds max allowed ${MAX_INPUT_DIMENSION}x${MAX_INPUT_DIMENSION}`,
-      );
+      throw new Error(`Unsupported image format. Allowed: ${ALLOWED_FORMATS.join(', ')}`);
     }
   } catch (err: any) {
     throw new HttpError(400, err.message || 'Invalid or unsupported image file');
   }
 
-  const originalImagePath = await saveOriginalImage(originalBuffer, userId || 'public');
+  const upscaledPhotoId = await generateUpscalePhotoId();
+  const originalImagePath = await saveOriginalImage(originalBuffer, upscaledPhotoId);
+  const originalInfo = await getImageDimensionInfo(originalBuffer);
 
   const upscaleDoc = new Upscale({
-    userId,
     originalImage: originalImagePath,
+    upscaledPhotoId,
+    scale,
     status: UPSCALE_STATUS.PENDING,
   });
   await upscaleDoc.save();
-
-  const originalInfo = await getImageDimensionInfo(originalBuffer);
-  const originalMegapixels = (originalInfo.widthPx * originalInfo.heightPx) / 1_000_000;
-
-  let preCheckWarning: string | undefined;
-  if (originalMegapixels >= APPROX_MAX_OUTPUT_MEGAPIXELS) {
-    preCheckWarning =
-      `Original image (${originalInfo.widthPx}x${originalInfo.heightPx}) is already at or above ` +
-      `Cutout Pro's max output resolution for this enhancer. The result may come back smaller, not upscaled.`;
-  }
 
   upscaleDoc.status = UPSCALE_STATUS.PROCESSING;
   await upscaleDoc.save();
 
   try {
-    const form = new FormData();
-    form.append('file', originalBuffer, {
-      filename: file.originalname || `upload.${metadata.format}`,
-      contentType: file.mimetype,
-    });
+    const { buffer: upscaledBuffer, format } = await performUpscale(
+      originalBuffer,
+      scale,
+      metadata.format,
+    );
 
-    const response = await axios.post(config.cutout_pro_upscale_api_url, form, {
-      headers: {
-        APIKEY: config.cutout_pro_api_key,
-        ...form.getHeaders(),
-      },
-      timeout: 60000,
-      maxBodyLength: Infinity,
-      maxContentLength: Infinity,
-    });
-
-    const result = response.data;
-
-    if (result.code !== 0 || !result.data?.imageUrl) {
-      throw new Error(result?.msg || 'Cutout Pro upscale failed');
-    }
-
-    const upscaledBuffer = await downloadImageAsBuffer(result.data.imageUrl);
     const upscaledInfo = await getImageDimensionInfo(upscaledBuffer);
-    const upscaledImageUrl = await saveUpscaledImage(upscaledBuffer, userId || 'public');
+    const upscaledImageUrl = await saveUpscaledImage(upscaledBuffer, upscaledPhotoId, format);
 
     const widthPercent = originalInfo.widthPx
       ? Number(
@@ -125,23 +143,12 @@ const upscaleImage = async (userId?: string, file?: Express.Multer.File): Promis
       : 0;
     const sizeMBDiff = Number((upscaledInfo.sizeMB - originalInfo.sizeMB).toFixed(3));
 
-    const didUpscale = widthPercent > 0 && heightPercent > 0;
-
     upscaleDoc.upscaledImage = upscaledImageUrl;
     upscaleDoc.original = originalInfo;
     upscaleDoc.upscaled = upscaledInfo;
     upscaleDoc.increase = { widthPercent, heightPercent, sizeBytesPercent, sizeMBDiff };
-    upscaleDoc.didUpscale = didUpscale;
-    const warningMessage =
-      preCheckWarning ||
-      (!didUpscale
-        ? "Cutout Pro returned an image smaller than the original — this image was likely already above the enhancer's max output resolution."
-        : undefined);
-    if (warningMessage) {
-      upscaleDoc.warning = warningMessage;
-    }
+    upscaleDoc.didUpscale = true;
     upscaleDoc.status = UPSCALE_STATUS.SUCCESS;
-
 
     await upscaleDoc.save();
 
@@ -150,17 +157,16 @@ const upscaleImage = async (userId?: string, file?: Express.Multer.File): Promis
     upscaleDoc.status = UPSCALE_STATUS.FAILED;
     upscaleDoc.errorMessage = error.message;
     await upscaleDoc.save();
-    throw new HttpError(502, error.message || 'Cutout Pro upscale failed');
+    throw new HttpError(500, error.message || 'Image upscale failed');
   }
 };
 
-const getAllUpscalesForUser = async (userId?: string) => {
-  const filter = userId ? { userId } : {};
-  const upscales = await Upscale.find(filter).sort({ createdAt: -1 }).exec();
+const getAllUpscales = async () => {
+  const upscales = await Upscale.find().sort({ createdAt: -1 }).exec();
   return upscales;
 };
 
 export const UpscaleServices = {
   upscaleImage,
-  getAllUpscalesForUser,
+  getAllUpscales,
 };

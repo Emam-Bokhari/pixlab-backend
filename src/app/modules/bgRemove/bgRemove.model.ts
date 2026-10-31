@@ -2,14 +2,8 @@ import mongoose, { Schema } from 'mongoose';
 import { BG_REMOVE_STATUS } from './bgRemove.constant';
 import { IBgRemove } from './bgRemove.interface';
 
-
 const bgRemoveSchema = new Schema<IBgRemove>(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: false,
-    },
-
     originalImage: {
       type: String,
       required: true,
@@ -44,7 +38,7 @@ const bgRemoveSchema = new Schema<IBgRemove>(
   }
 );
 
-bgRemoveSchema.index({ userId: 1, createdAt: -1 });
+bgRemoveSchema.index({ createdAt: -1 });
 bgRemoveSchema.index({ status: 1 });
 
 export const BgRemove = mongoose.model<IBgRemove>('BgRemove', bgRemoveSchema);

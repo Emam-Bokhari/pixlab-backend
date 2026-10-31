@@ -1,4 +1,4 @@
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { RESIZE_STATUS, RESIZE_FIT, RESIZE_CROP_STRATEGY } from './resize.constant';
 
 export interface ImageDimensionInfo {
@@ -18,7 +18,6 @@ export interface ResizeParams {
 }
 
 export interface IResize {
-  userId?: Types.ObjectId | string;
   originalImage: string;
   resizedImage?: string;
 
@@ -35,7 +34,6 @@ export interface IResize {
 
 export type ResizeDocument = HydratedDocument<IResize>;
 
-// User কে শুধু এই দুইটা field দিতে হয় — আর কিছু না।
 export interface ResizeRequestInput {
   width: number;
   height: number;

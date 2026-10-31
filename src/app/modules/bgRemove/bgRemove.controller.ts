@@ -3,13 +3,9 @@ import catchAsync from '../../shared/catchAsync';
 import { BgRemoveServices } from './bgRemove.service';
 import sendResponse from '../../shared/sendResponse';
 
-
-// POST /bg-remove  (multipart/form-data: file, bg_color optional)
+// POST /bg-remove
 const createBgRemoveJob = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id ?? (req as any).user?._id;
-  const data = req.body;
-
-  const result = await BgRemoveServices.createBgRemoveJob(userId, data);
+  const result = await BgRemoveServices.createBgRemoveJob(req.body);
 
   sendResponse(res, {
     success: true,
@@ -33,17 +29,16 @@ const getBgRemoveJobById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// GET /bg-remove/me/history
-const getMyBgRemoveJobs = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id ?? (req as any).user?._id;
+// GET /bg-remove
+const getAllBgRemoveJobs = catchAsync(async (req: Request, res: Response) => {
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
 
-  const result = await BgRemoveServices.getMyBgRemoveJobs(userId, limit);
+  const result = await BgRemoveServices.getAllBgRemoveJobs(limit);
 
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: 'History fetched successfully',
+    message: 'Jobs fetched successfully',
     data: result,
   });
 });
@@ -51,5 +46,5 @@ const getMyBgRemoveJobs = catchAsync(async (req: Request, res: Response) => {
 export const BgRemoveControllers = {
   createBgRemoveJob,
   getBgRemoveJobById,
-  getMyBgRemoveJobs,
+  getAllBgRemoveJobs,
 };
