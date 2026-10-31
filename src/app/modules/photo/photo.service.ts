@@ -100,7 +100,7 @@ const createPhotoToDB = async (
 // Background processing function for Cutout Pro
 export const processPhoto = async (
   photoId: string,
-  userId?: string,
+  userId: string = 'snap',
   bgColor: string,
   sizeInfo: { name: string; mmWidth: number; mmHeight: number },
   filePath: string | null,
@@ -295,7 +295,7 @@ const generatePrintLayout = async (
     (override?.paperSize !== undefined && override.paperSize !== originalPaperSize);
 
   if (settingsChanged) {
-    await photoQueue.add('regenerateFormats', { photoId, userId });
+    await photoQueue.add('regenerateFormats', { photoId, userId: photo.userId ? String(photo.userId) : 'snap' });
   }
 
   return photo;
@@ -407,7 +407,7 @@ const regeneratePrintLayoutLocal = async (
 
   await photo.save();
 
-  await photoQueue.add('regenerateFormats', { photoId, userId });
+  await photoQueue.add('regenerateFormats', { photoId, userId: photo.userId ? String(photo.userId) : 'snap' });
 
   return photo;
 };

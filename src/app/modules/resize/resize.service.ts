@@ -80,7 +80,7 @@ const performResize = async (
 };
 
 const resizeImage = async (
-  userId?: string,
+  userId: string = 'public',
   input: ResizeRequestInput,
   file?: Express.Multer.File,
 ): Promise<ResizeDocument> => {

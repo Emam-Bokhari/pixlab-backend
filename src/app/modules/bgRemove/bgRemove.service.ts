@@ -1,4 +1,5 @@
 import fs from "fs";
+import mongoose from "mongoose";
 import path from "path";
 
 import { BgRemove } from "./bgRemove.model";
@@ -52,13 +53,14 @@ const createBgRemoveJob = async (
   );
 
   // Create DB record
-  const job = await BgRemove.create({
-    userId,
+  const job = new BgRemove({
+    userId: userId && mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : undefined,
     bgRemovePhotoId,
     originalImage,
     bgColor: cleanBgColor,
     status: BG_REMOVE_STATUS.PROCESSING,
   });
+  await job.save();
 
   try {
     const processedBuffer = await removeBackground(

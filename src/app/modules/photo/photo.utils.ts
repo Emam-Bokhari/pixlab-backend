@@ -23,7 +23,7 @@ export const downloadImageAsBuffer = async (url: string): Promise<Buffer> => {
  */
 export const downloadAndSaveProcessedImage = async (
   buffer: Buffer,
-  userId?: string,
+  userId: string = 'snap',
   photoType: string,
   variant: 'png' | 'jpg' | 'webp' | 'layout',
   dpi: number = DPI,
@@ -73,7 +73,7 @@ export const readSavedFileBuffer = (publicUrl: string): Buffer => {
  */
 export const downloadAndSavePdf = async (
   buffer: Buffer,
-  userId?: string,
+  userId: string = 'snap',
   photoType: string,
 ): Promise<string> => {
   const folderName = 'processedImage';
