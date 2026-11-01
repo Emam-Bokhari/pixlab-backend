@@ -1,28 +1,17 @@
-import fs from 'fs';
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import { Reduce } from './reduce.model';
-import { ReduceDocument } from './reduce.interface';
-import { compressImageToTargetSize, saveReducedImage, getImageSizeInfo } from './reduce.utils';
-import path from 'path';
-
-const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
+import { ReduceResult } from './reduce.interface';
+import { compressImageToTargetSize, getImageSizeInfo, ALLOWED_FORMATS } from './reduce.utils';
 
 const reduceImageSize = async (
-  data: { targetSizeKb: number; image: string },
-): Promise<ReduceDocument> => {
-  const { targetSizeKb, image } = data;
-
-  if (!image) {
-    throw new HttpError(400, 'No image path provided');
+  file: Express.Multer.File,
+  targetSizeKb: number,
+): Promise<ReduceResult> => {
+  if (!file || !file.buffer) {
+    throw new HttpError(400, 'No image file provided');
   }
 
-  const filePath = path.join(process.cwd(), image);
-  if (!fs.existsSync(filePath)) {
-    throw new HttpError(404, 'Uploaded image file not found on server');
-  }
-
-  const buffer = fs.readFileSync(filePath);
+  const buffer = file.buffer;
 
   let metadata;
   try {
@@ -35,43 +24,24 @@ const reduceImageSize = async (
   }
 
   const originalInfo = await getImageSizeInfo(buffer);
-
   const compressionResult = await compressImageToTargetSize(buffer, targetSizeKb, metadata.format);
-
-  const reducedImageUrl = await saveReducedImage(
-    compressionResult.buffer,
-    compressionResult.format,
-  );
-
   const reducedInfo = await getImageSizeInfo(compressionResult.buffer);
 
-  const originalSize = originalInfo.sizeBytes;
-  const reducedSize = reducedInfo.sizeBytes;
-
   const reductionPercentage =
-    originalSize > 0 ? Number((((originalSize - reducedSize) / originalSize) * 100).toFixed(2)) : 0;
+    originalInfo.sizeBytes > 0
+      ? Number((((originalInfo.sizeBytes - reducedInfo.sizeBytes) / originalInfo.sizeBytes) * 100).toFixed(2))
+      : 0;
 
-  const reduceRecord = new Reduce({
-    originalImageName: path.basename(image),
-    reducedImageUrl,
+  return {
+    buffer: compressionResult.buffer,
+    format: compressionResult.format,
     original: originalInfo,
     reduced: reducedInfo,
     reductionPercentage,
     targetSizeKb,
-    format: compressionResult.format === 'jpeg' ? 'jpg' : compressionResult.format,
-  });
-
-  await reduceRecord.save();
-
-  return reduceRecord;
-};
-
-const getAllReducedImages = async () => {
-  const records = await Reduce.find().sort({ createdAt: -1 }).exec();
-  return records;
+  };
 };
 
 export const ReduceServices = {
   reduceImageSize,
-  getAllReducedImages,
 };

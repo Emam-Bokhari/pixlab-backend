@@ -1,5 +1,4 @@
 import cors from 'cors';
-import path from 'path';
 import express, { type Request, type Response } from 'express';
 import { Morgan } from './app/shared/morgan';
 import { Routes } from './app/routes';
@@ -12,9 +11,6 @@ app.use(Morgan.errorHandler);
 
 app.use(express.json());
 app.use(cors());
-
-// serve uploaded files
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use('/api/v1', Routes.v1Routes);
 

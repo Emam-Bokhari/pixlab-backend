@@ -1,5 +1,3 @@
-import { UPSCALE_STATUS } from './upscale.constant';
-
 export interface ImageDimensionInfo {
   widthPx: number;
   heightPx: number;
@@ -15,19 +13,11 @@ export interface UpscaleIncreaseInfo {
   sizeMBDiff: number;
 }
 
-export interface TUpscale {
-  originalImage: string;
-  upscaledImage?: string;
-  upscaledPhotoId?: string;
-
-  original?: ImageDimensionInfo;
-  upscaled?: ImageDimensionInfo;
-  increase?: UpscaleIncreaseInfo;
-  scale?: number;
-  didUpscale?: boolean;
-
-  status: UPSCALE_STATUS;
-  errorMessage?: string;
-
-  createdAt: Date;
+export interface UpscaleResult {
+  buffer: Buffer;
+  format: string;
+  scale: number;
+  original: ImageDimensionInfo;
+  upscaled: ImageDimensionInfo;
+  increase: UpscaleIncreaseInfo;
 }

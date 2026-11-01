@@ -1,9 +1,7 @@
 import http from 'http';
 import mongoose from 'mongoose';
-import { Server as SocketIOServer } from 'socket.io';
 import app from './app';
 import config from './app/config';
-import { socketHelper } from './app/helpers/socketHelper';
 import { errorLogger, logger } from './app/shared/logger';
 import { emailWorker, emailQueue } from './queues/index';
 import './queues/index';
@@ -52,23 +50,15 @@ process.on('SIGTERM', shutdown);
 
 async function main() {
   try {
-    await mongoose.connect(config.database_url as string);
-    logger.info('Database connected successfully');
+    // MongoDB is used only for the support module (email records)
+    if (config.database_url) {
+      await mongoose.connect(config.database_url as string);
+      logger.info('Database connected successfully');
+    } else {
+      logger.info('DATABASE_URL not set — skipping MongoDB connection');
+    }
 
     server = http.createServer(app);
-
-    const io = new SocketIOServer(server, {
-      pingTimeout: 60000,
-      pingInterval: 25000,
-      cors: {
-        origin: '*',
-      },
-      transports: ['websocket', 'polling'],
-    });
-
-    socketHelper.socket(io);
-
-    (global as any).io = io;
 
     server.listen(config.port, () => {
       logger.info(`Server running on port ${config.port}`);

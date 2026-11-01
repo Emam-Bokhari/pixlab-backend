@@ -1,10 +1,7 @@
 import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
 import { ImageSizeInfo } from './reduce.interface';
-import { generateReducedPhotoId } from '../../utils/generateYearBasedId';
 
-const BASE_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp'];
 
 export interface CompressedImageResult {
   buffer: Buffer;
@@ -28,7 +25,6 @@ export const compressImageToTargetSize = async (
 
   let format = originalFormat.toLowerCase();
   if (format === 'bmp' || format === 'png') {
-    // convert uncompressed formats to jpeg for efficient size reduction
     format = 'jpeg';
   } else if (format === 'jpg') {
     format = 'jpeg';
@@ -45,7 +41,6 @@ export const compressImageToTargetSize = async (
     let lowQ = minQuality;
     let highQ = maxQuality;
     let scaleBestBuffer: Buffer | null = null;
-    let scaleBestSize = 0;
 
     for (let iter = 0; iter < 4; iter++) {
       const q = Math.round((lowQ + highQ) / 2);
@@ -64,7 +59,6 @@ export const compressImageToTargetSize = async (
 
       if (size <= targetSizeBytes) {
         scaleBestBuffer = buf;
-        scaleBestSize = size;
         lowQ = q + 1;
       } else {
         highQ = q - 1;
@@ -72,10 +66,11 @@ export const compressImageToTargetSize = async (
     }
 
     if (scaleBestBuffer) {
+      const meta = await sharp(scaleBestBuffer).metadata();
       return {
         buffer: scaleBestBuffer,
-        widthPx: w,
-        heightPx: h,
+        widthPx: meta.width || w,
+        heightPx: meta.height || h,
         format,
         sizeBytes: scaleBestBuffer.length,
       };
@@ -106,25 +101,6 @@ export const compressImageToTargetSize = async (
   };
 };
 
-export const saveReducedImage = async (
-  buffer: Buffer,
-  format: string,
-): Promise<string> => {
-  const folderName = 'reduce';
-  const dir = path.join(BASE_UPLOAD_DIR, folderName);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
-  const ext = format === 'jpeg' ? 'jpg' : format;
-  const reducedPhotoId = await generateReducedPhotoId();
-  const fileName = `${reducedPhotoId}.${ext}`;
-  const filePath = path.join(dir, fileName);
-  fs.writeFileSync(filePath, buffer);
-
-  return `/uploads/${folderName}/${fileName}`;
-};
-
 export const getImageSizeInfo = async (buffer: Buffer): Promise<ImageSizeInfo> => {
   const metadata = await sharp(buffer).metadata();
   const sizeBytes = buffer.length;
@@ -137,3 +113,5 @@ export const getImageSizeInfo = async (buffer: Buffer): Promise<ImageSizeInfo> =
     sizeMB: Number((sizeBytes / (1024 * 1024)).toFixed(3)),
   };
 };
+
+export { ALLOWED_FORMATS };

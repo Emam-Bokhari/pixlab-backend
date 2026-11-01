@@ -5,10 +5,10 @@ dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 export default {
   port: process.env.PORT,
-  database_url: process.env.DATABASE_URL,
   node_env: process.env.NODE_ENV,
-  support_email: process.env.SUPPORT_EMAIL,
   frontend_url: process.env.FRONTEND_URL,
+  database_url: process.env.DATABASE_URL,
+  support_email: process.env.SUPPORT_EMAIL,
   redis: {
     redis_host: process.env.REDIS_HOST,
     redis_port: process.env.REDIS_PORT,

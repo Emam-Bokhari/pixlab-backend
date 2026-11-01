@@ -1,5 +1,3 @@
-import { HydratedDocument, Types } from 'mongoose';
-
 export interface ImageSizeInfo {
   widthPx: number;
   heightPx: number;
@@ -8,18 +6,11 @@ export interface ImageSizeInfo {
   sizeMB: number;
 }
 
-export interface IReduce {
-
-  originalImageName: string;
-  reducedImageUrl: string;
+export interface ReduceResult {
+  buffer: Buffer;
+  format: string;
   original: ImageSizeInfo;
   reduced: ImageSizeInfo;
-  reductionPercentage: number; // e.g. 75.50
+  reductionPercentage: number;
   targetSizeKb: number;
-  format: string; // jpeg, png, webp, etc.
-  createdAt?: Date;
-  updatedAt?: Date;
-  reducedPhotoId?: string;
 }
-
-export type ReduceDocument = HydratedDocument<IReduce>;

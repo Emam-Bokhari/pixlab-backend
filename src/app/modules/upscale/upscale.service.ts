@@ -1,15 +1,7 @@
-import fs from 'fs';
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import { UPSCALE_STATUS } from './upscale.constant';
-import {
-  saveOriginalImage,
-  saveUpscaledImage,
-  getImageDimensionInfo,
-} from './upscale.utils';
-import { TUpscale } from './upscale.interface';
-import { Upscale } from './upscale.model';
-import { generateUpscalePhotoId } from '../../utils/generateYearBasedId';
+import { UpscaleResult } from './upscale.interface';
+import { getImageDimensionInfo } from './upscale.utils';
 
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp', 'tiff', 'avif'];
 const MAX_FILE_SIZE_MB = 20;
@@ -26,6 +18,9 @@ const performUpscale = async (
   const targetWidth = Math.round(originalWidth * scale);
   const targetHeight = Math.round(originalHeight * scale);
 
+  let format = originalFormat.toLowerCase();
+  if (format === 'jpg') format = 'jpeg';
+
   // lanczos3 resampling with unsharp masking for edge enhancement
   let pipeline = sharp(buffer)
     .rotate()
@@ -40,9 +35,6 @@ const performUpscale = async (
       m1: 1.0,
       m2: 2.0,
     });
-
-  let format = originalFormat.toLowerCase();
-  if (format === 'jpg') format = 'jpeg';
 
   switch (format) {
     case 'jpeg':
@@ -70,16 +62,13 @@ const performUpscale = async (
 const upscaleImage = async (
   file?: Express.Multer.File,
   requestedScale: number = 2,
-): Promise<TUpscale> => {
-  if (!file) throw new HttpError(400, 'No file provided');
+): Promise<UpscaleResult> => {
+  if (!file || !file.buffer) throw new HttpError(400, 'No file provided');
 
   const parsedScale = Number(requestedScale);
   const scale = parsedScale >= 1 && parsedScale <= 4 ? parsedScale : 2;
 
-  let originalBuffer: Buffer;
-  if (file.buffer) originalBuffer = file.buffer;
-  else if (file.path) originalBuffer = fs.readFileSync(file.path);
-  else throw new HttpError(400, 'File buffer not found');
+  const originalBuffer = file.buffer;
 
   const fileSizeMB = originalBuffer.length / (1024 * 1024);
   if (fileSizeMB > MAX_FILE_SIZE_MB) {
@@ -96,77 +85,31 @@ const upscaleImage = async (
     throw new HttpError(400, err.message || 'Invalid or unsupported image file');
   }
 
-  const upscaledPhotoId = await generateUpscalePhotoId();
-  const originalImagePath = await saveOriginalImage(originalBuffer, upscaledPhotoId);
   const originalInfo = await getImageDimensionInfo(originalBuffer);
+  const { buffer: upscaledBuffer, format } = await performUpscale(originalBuffer, scale, metadata.format);
+  const upscaledInfo = await getImageDimensionInfo(upscaledBuffer);
 
-  const upscaleDoc = new Upscale({
-    originalImage: originalImagePath,
-    upscaledPhotoId,
+  const widthPercent = originalInfo.widthPx
+    ? Number((((upscaledInfo.widthPx - originalInfo.widthPx) / originalInfo.widthPx) * 100).toFixed(2))
+    : 0;
+  const heightPercent = originalInfo.heightPx
+    ? Number((((upscaledInfo.heightPx - originalInfo.heightPx) / originalInfo.heightPx) * 100).toFixed(2))
+    : 0;
+  const sizeBytesPercent = originalInfo.sizeBytes
+    ? Number((((upscaledInfo.sizeBytes - originalInfo.sizeBytes) / originalInfo.sizeBytes) * 100).toFixed(2))
+    : 0;
+  const sizeMBDiff = Number((upscaledInfo.sizeMB - originalInfo.sizeMB).toFixed(3));
+
+  return {
+    buffer: upscaledBuffer,
+    format,
     scale,
-    status: UPSCALE_STATUS.PENDING,
-  });
-  await upscaleDoc.save();
-
-  upscaleDoc.status = UPSCALE_STATUS.PROCESSING;
-  await upscaleDoc.save();
-
-  try {
-    const { buffer: upscaledBuffer, format } = await performUpscale(
-      originalBuffer,
-      scale,
-      metadata.format,
-    );
-
-    const upscaledInfo = await getImageDimensionInfo(upscaledBuffer);
-    const upscaledImageUrl = await saveUpscaledImage(upscaledBuffer, upscaledPhotoId, format);
-
-    const widthPercent = originalInfo.widthPx
-      ? Number(
-          (((upscaledInfo.widthPx - originalInfo.widthPx) / originalInfo.widthPx) * 100).toFixed(2),
-        )
-      : 0;
-    const heightPercent = originalInfo.heightPx
-      ? Number(
-          (((upscaledInfo.heightPx - originalInfo.heightPx) / originalInfo.heightPx) * 100).toFixed(
-            2,
-          ),
-        )
-      : 0;
-    const sizeBytesPercent = originalInfo.sizeBytes
-      ? Number(
-          (
-            ((upscaledInfo.sizeBytes - originalInfo.sizeBytes) / originalInfo.sizeBytes) *
-            100
-          ).toFixed(2),
-        )
-      : 0;
-    const sizeMBDiff = Number((upscaledInfo.sizeMB - originalInfo.sizeMB).toFixed(3));
-
-    upscaleDoc.upscaledImage = upscaledImageUrl;
-    upscaleDoc.original = originalInfo;
-    upscaleDoc.upscaled = upscaledInfo;
-    upscaleDoc.increase = { widthPercent, heightPercent, sizeBytesPercent, sizeMBDiff };
-    upscaleDoc.didUpscale = true;
-    upscaleDoc.status = UPSCALE_STATUS.SUCCESS;
-
-    await upscaleDoc.save();
-
-    return upscaleDoc;
-  } catch (error: any) {
-    upscaleDoc.status = UPSCALE_STATUS.FAILED;
-    upscaleDoc.errorMessage = error.message;
-    await upscaleDoc.save();
-    throw new HttpError(500, error.message || 'Image upscale failed');
-  }
-};
-
-const getAllUpscales = async () => {
-  const upscales = await Upscale.find().sort({ createdAt: -1 }).exec();
-  return upscales;
+    original: originalInfo,
+    upscaled: upscaledInfo,
+    increase: { widthPercent, heightPercent, sizeBytesPercent, sizeMBDiff },
+  };
 };
 
 export const UpscaleServices = {
   upscaleImage,
-  getAllUpscales,
 };

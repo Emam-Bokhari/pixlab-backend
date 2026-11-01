@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { SUPPORT_STATUS } from './support.constant';
 import { TSupport } from './support.interface';
-import { softDeletePlugin } from '../../DB/plugins/softDelete.plugin';
+import { softDeletePlugin } from './plugins/softDelete.plugin';
 
 const supportSchema = new Schema<TSupport>(
   {

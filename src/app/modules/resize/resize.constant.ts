@@ -1,11 +1,4 @@
-export enum RESIZE_STATUS {
-  PENDING = 'pending',
-  PROCESSING = 'processing',
-  SUCCESS = 'success',
-  FAILED = 'failed',
-}
-
-// internal default configuration
+// app-wide fixed defaults for resize operations
 export enum RESIZE_FIT {
   COVER = 'cover',
   FILL = 'fill',
@@ -19,7 +12,6 @@ export enum RESIZE_CROP_STRATEGY {
   ENTROPY = 'entropy',
 }
 
-// app-wide fixed defaults
 export const DEFAULT_RESIZE_FIT = RESIZE_FIT.COVER;
 export const DEFAULT_CROP_STRATEGY = RESIZE_CROP_STRATEGY.ATTENTION;
 
@@ -28,3 +20,4 @@ export const RESIZE_LIMITS = {
   MAX_DIMENSION: 8000,
   MAX_INPUT_FILE_SIZE_MB: 25,
 };
+

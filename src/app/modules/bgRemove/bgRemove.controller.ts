@@ -1,47 +1,30 @@
 import { Request, Response } from 'express';
 import catchAsync from '../../shared/catchAsync';
 import { BgRemoveServices } from './bgRemove.service';
-import sendResponse from '../../shared/sendResponse';
+import { HttpError } from '../../errors/HttpError';
 
-const createBgRemoveJob = catchAsync(async (req: Request, res: Response) => {
-  const result = await BgRemoveServices.createBgRemoveJob(req.body);
+const removeBg = catchAsync(async (req: Request, res: Response) => {
+  const file = req.file;
 
-  sendResponse(res, {
-    success: true,
-    statusCode: 201,
-    message: 'Background removed successfully',
-    data: result,
+  if (!file) {
+    throw new HttpError(400, 'No image file provided');
+  }
+
+  const bgColor = req.body?.bgColor as string | undefined;
+
+  const result = await BgRemoveServices.removeBg(file, bgColor);
+
+  res.set({
+    'Content-Type': 'image/png',
+    'Content-Disposition': 'attachment; filename="bg-removed.png"',
+    'Content-Length': result.buffer.length.toString(),
+    ...(result.bgColor && { 'X-Background-Color': result.bgColor }),
+    'Access-Control-Expose-Headers': 'X-Background-Color',
   });
-});
 
-const getBgRemoveJobById = catchAsync(async (req: Request, res: Response) => {
-  const jobId = req.params.jobId as string;
-
-  const result = await BgRemoveServices.getBgRemoveJobById(jobId);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: 200,
-    message: 'Job fetched successfully',
-    data: result,
-  });
-});
-
-const getAllBgRemoveJobs = catchAsync(async (req: Request, res: Response) => {
-  const limit = req.query.limit ? Number(req.query.limit) : undefined;
-
-  const result = await BgRemoveServices.getAllBgRemoveJobs(limit);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: 200,
-    message: 'Jobs fetched successfully',
-    data: result,
-  });
+  res.send(result.buffer);
 });
 
 export const BgRemoveControllers = {
-  createBgRemoveJob,
-  getBgRemoveJobById,
-  getAllBgRemoveJobs,
+  removeBg,
 };
