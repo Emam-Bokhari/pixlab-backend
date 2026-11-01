@@ -1,9 +1,15 @@
 export interface ImageDimensionInfo {
+  format?: string;
   widthPx: number;
   heightPx: number;
   sizeBytes: number;
   sizeKB: number;
   sizeMB: number;
+}
+
+export interface ImageDimensionInfoWithData extends ImageDimensionInfo {
+  format: string;
+  imageUrl: string;
 }
 
 export interface UpscaleIncreaseInfo {
@@ -19,5 +25,12 @@ export interface UpscaleResult {
   scale: number;
   original: ImageDimensionInfo;
   upscaled: ImageDimensionInfo;
+  increase: UpscaleIncreaseInfo;
+}
+
+export interface UpscaleResponseData {
+  original: ImageDimensionInfoWithData;
+  current: ImageDimensionInfoWithData;
+  scale: number;
   increase: UpscaleIncreaseInfo;
 }

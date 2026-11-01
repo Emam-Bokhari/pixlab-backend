@@ -22,7 +22,7 @@ export interface ImageDetailsWithData extends ImageSizeInfo {
 
 export interface ReduceResponseData {
   original: ImageDetailsWithData;
-  reduced: ImageDetailsWithData;
+  current: ImageDetailsWithData;
   targetSizeKb: number;
   reductionPercentage: number;
 }

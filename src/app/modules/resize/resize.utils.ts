@@ -10,7 +10,7 @@ export const getImageDimensionInfo = async (buffer: Buffer): Promise<ImageDimens
     heightPx: metadata.height || 0,
     sizeBytes,
     sizeKB: Number((sizeBytes / 1024).toFixed(2)),
-    sizeMB: Number((sizeBytes / (1024 * 1024)).toFixed(3)),
+    sizeMB: Number((sizeBytes / (1024 * 1024)).toFixed(2)),
     format: metadata.format || 'unknown',
   };
 };

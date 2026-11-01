@@ -7,6 +7,10 @@ export interface ImageDimensionInfo {
   format: string;
 }
 
+export interface ImageDimensionInfoWithData extends ImageDimensionInfo {
+  imageUrl: string;
+}
+
 export interface ResizeRequestInput {
   width: number;
   height: number;
@@ -17,4 +21,9 @@ export interface ResizeResult {
   format: string;
   original: ImageDimensionInfo;
   resized: ImageDimensionInfo;
+}
+
+export interface ResizeResponseData {
+  original: ImageDimensionInfoWithData;
+  current: ImageDimensionInfoWithData;
 }

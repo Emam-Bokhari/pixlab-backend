@@ -2,7 +2,7 @@ import catchAsync from '../../shared/catchAsync';
 import { ReduceServices } from './reduce.service';
 import { HttpError } from '../../errors/HttpError';
 import sendResponse from '../../shared/sendResponse';
-import { ReduceResponseData } from './reduce.interface';
+import { ReduceResponseData, ImageDetailsWithData } from './reduce.interface';
 
 const reducePhoto = catchAsync(async (req, res) => {
   const file = req.file;
@@ -66,25 +66,29 @@ const reducePhoto = catchAsync(async (req, res) => {
   const originalBase64 = `data:${originalMime};base64,${file.buffer.toString('base64')}`;
   const reducedBase64 = `data:${mimeType};base64,${result.buffer.toString('base64')}`;
 
+  const originalData: ImageDetailsWithData = {
+    format: originalMime.split('/')[1] || 'jpeg',
+    widthPx: result.original.widthPx,
+    heightPx: result.original.heightPx,
+    sizeBytes: result.original.sizeBytes,
+    sizeKB: result.original.sizeKB,
+    sizeMB: result.original.sizeMB,
+    imageUrl: originalBase64,
+  };
+
+  const currentData: ImageDetailsWithData = {
+    format: result.format,
+    widthPx: result.reduced.widthPx,
+    heightPx: result.reduced.heightPx,
+    sizeBytes: result.reduced.sizeBytes,
+    sizeKB: result.reduced.sizeKB,
+    sizeMB: result.reduced.sizeMB,
+    imageUrl: reducedBase64,
+  };
+
   const responseData: ReduceResponseData = {
-    original: {
-      format: originalMime.split('/')[1] || 'jpeg',
-      widthPx: result.original.widthPx,
-      heightPx: result.original.heightPx,
-      sizeBytes: result.original.sizeBytes,
-      sizeKB: result.original.sizeKB,
-      sizeMB: result.original.sizeMB,
-      imageUrl: originalBase64,
-    },
-    reduced: {
-      format: result.format,
-      widthPx: result.reduced.widthPx,
-      heightPx: result.reduced.heightPx,
-      sizeBytes: result.reduced.sizeBytes,
-      sizeKB: result.reduced.sizeKB,
-      sizeMB: result.reduced.sizeMB,
-      imageUrl: reducedBase64,
-    },
+    original: originalData,
+    current: currentData,
     targetSizeKb: result.targetSizeKb,
     reductionPercentage: result.reductionPercentage,
   };
