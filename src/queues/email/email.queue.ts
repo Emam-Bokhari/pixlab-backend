@@ -6,3 +6,7 @@ export const emailQueue = new Queue('emailQueue', {
   connection,
   defaultJobOptions,
 });
+
+emailQueue.on('error', (err) => {
+  // Avoid crashing if Redis is temporarily unreachable
+});

@@ -5,17 +5,22 @@ export const removeBackground = async (
   imageBuffer: Buffer,
   bgColorHex?: string,
 ): Promise<Buffer> => {
-  // accepts ArrayBuffer / Blob / URL
-  const arrayBuffer = imageBuffer.buffer.slice(
-    imageBuffer.byteOffset,
-    imageBuffer.byteOffset + imageBuffer.byteLength,
-  ) as ArrayBuffer;
+  // Normalize input image (JPG, JPEG, WEBP, PNG, etc.) to a 4-channel RGBA PNG
+  // and auto-rotate according to EXIF metadata
+  const normalizedPngBuffer = await sharp(imageBuffer)
+    .rotate()
+    .ensureAlpha()
+    .png()
+    .toBuffer();
 
-  const resultBlob = await imglyRemoveBg(arrayBuffer, {
+  // Create a Blob with explicit image/png mime type for @imgly
+  const inputBlob = new Blob([new Uint8Array(normalizedPngBuffer)], { type: 'image/png' });
+
+  const resultBlob = await imglyRemoveBg(inputBlob, {
     model: 'medium', // "small" | "medium" | "large"
     output: {
       format: 'image/png',
-      quality: 1, 
+      quality: 1,
     },
   });
 
@@ -26,10 +31,17 @@ export const removeBackground = async (
     return transparentBuffer;
   }
 
-  const hex = bgColorHex.replace(/^#/, '').toUpperCase();
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
+  let fullHex = bgColorHex.replace(/^#/, '').trim();
+  if (fullHex.length === 3) {
+    fullHex = fullHex
+      .split('')
+      .map((char) => char + char)
+      .join('');
+  }
+
+  const r = parseInt(fullHex.substring(0, 2), 16) || 0;
+  const g = parseInt(fullHex.substring(2, 4), 16) || 0;
+  const b = parseInt(fullHex.substring(4, 6), 16) || 0;
 
   const metadata = await sharp(transparentBuffer).metadata();
   const width = metadata.width ?? 800;
@@ -40,8 +52,8 @@ export const removeBackground = async (
     create: {
       width,
       height,
-      channels: 3,
-      background: { r, g, b },
+      channels: 4,
+      background: { r, g, b, alpha: 1 },
     },
   })
     .png()

@@ -1,5 +1,4 @@
 import http from 'http';
-import mongoose from 'mongoose';
 import app from './app';
 import config from './app/config';
 import { errorLogger, logger } from './app/shared/logger';
@@ -50,19 +49,20 @@ process.on('SIGTERM', shutdown);
 
 async function main() {
   try {
-    // MongoDB is used only for the support module (email records)
-    if (config.database_url) {
-      await mongoose.connect(config.database_url as string);
-      logger.info('Database connected successfully');
-    } else {
-      logger.info('DATABASE_URL not set — skipping MongoDB connection');
-    }
-
     server = http.createServer(app);
 
-    server.listen(config.port, () => {
-      logger.info(`Server running on port ${config.port}`);
-    });
+    const port = Number(config.port) || 5000;
+    const ip = config.ip;
+
+    if (ip) {
+      server.listen(port, ip, () => {
+        logger.info(`Server running on http://${ip}:${port}`);
+      });
+    } else {
+      server.listen(port, () => {
+        logger.info(`Server running on port ${port}`);
+      });
+    }
   } catch (error) {
     errorLogger.error('Failed to start server', error);
     process.exit(1);

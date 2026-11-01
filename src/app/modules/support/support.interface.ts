@@ -1,4 +1,3 @@
-import { Document, Types } from 'mongoose';
 import { SUPPORT_STATUS } from './support.constant';
 
 export type TSupport = {
@@ -9,7 +8,3 @@ export type TSupport = {
   status?: SUPPORT_STATUS;
   isDeleted?: boolean;
 };
-
-export interface SupportDocument extends TSupport, Document {
-  _id: Types.ObjectId;
-}

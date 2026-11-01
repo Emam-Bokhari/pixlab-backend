@@ -14,3 +14,15 @@ export interface ReduceResult {
   reductionPercentage: number;
   targetSizeKb: number;
 }
+
+export interface ImageDetailsWithData extends ImageSizeInfo {
+  format: string;
+  imageUrl: string;
+}
+
+export interface ReduceResponseData {
+  original: ImageDetailsWithData;
+  reduced: ImageDetailsWithData;
+  targetSizeKb: number;
+  reductionPercentage: number;
+}
