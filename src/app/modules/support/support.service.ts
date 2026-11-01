@@ -12,7 +12,7 @@ const createSupportToDB = async (payload: TSupport) => {
 
   await emailQueue.add('sendSupportEmail', {
     email: payload.email,
-    subject: 'AiSnapStudio Support Request',
+    subject: 'PixLab Support Request',
     body: emailTemplate.supportFormTemplate(payload).html,
   });
 

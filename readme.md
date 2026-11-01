@@ -1,4 +1,4 @@
-# AiSnapStudio Backend
+# PixLab Backend
 
 ## Overview
 Public image processing REST API built with Node.js, Express, TypeScript, Sharp, and MongoDB.
@@ -332,22 +332,22 @@ Configuration options for `.env`:
 PORT=5000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
-DATABASE_URL=mongodb://localhost:27017/aisnapstudio
-SUPPORT_EMAIL=support@aisnapstudio.com
+DATABASE_URL=mongodb://localhost:27017/pixlab
+SUPPORT_EMAIL=support@pixlab.com
 
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 REDIS_PASSWORD=
 REDIS_DB=0
 
-EMAIL_FROM=no-reply@aisnapstudio.com
+EMAIL_FROM=no-reply@pixlab.com
 EMAIL_USER=your-smtp-user
 EMAIL_PASS=your-smtp-pass
 EMAIL_PORT=587
 EMAIL_HOST=smtp.gmail.com
 
 RESEND_API_KEY=re_xxxxxxxxxxxx
-DEFAULT_EMAIL_FROM=no-reply@aisnapstudio.com
+DEFAULT_EMAIL_FROM=no-reply@pixlab.com
 
 BG_REMOVER_API_URL=http://localhost:8000
 ```

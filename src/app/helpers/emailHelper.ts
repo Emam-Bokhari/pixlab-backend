@@ -21,7 +21,7 @@ const sendEmail = async (values: ISendEmail) => {
       throw new Error('Sender email (from) is not defined in config or template.');
     }
 
-    const formattedFrom = fromEmail.includes('<') ? fromEmail : `"BloodBridge" <${fromEmail}>`;
+    const formattedFrom = fromEmail.includes('<') ? fromEmail : `"PixLab" <${fromEmail}>`;
 
     const info = await transporter.sendMail({
       from: formattedFrom,
