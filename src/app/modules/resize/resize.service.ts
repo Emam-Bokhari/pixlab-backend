@@ -81,7 +81,10 @@ const resizeImage = async (
 
   const fileSizeMB = originalBuffer.length / (1024 * 1024);
   if (fileSizeMB > RESIZE_LIMITS.MAX_INPUT_FILE_SIZE_MB) {
-    throw new HttpError(400, `Image exceeds max allowed size of ${RESIZE_LIMITS.MAX_INPUT_FILE_SIZE_MB}MB`);
+    throw new HttpError(
+      400,
+      `Image exceeds max allowed size of ${RESIZE_LIMITS.MAX_INPUT_FILE_SIZE_MB}MB`,
+    );
   }
 
   try {

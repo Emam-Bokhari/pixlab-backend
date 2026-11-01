@@ -22,10 +22,10 @@ const reducePhoto = catchAsync(async (req, res) => {
     result.format === 'jpeg' || result.format === 'jpg'
       ? 'image/jpeg'
       : result.format === 'webp'
-      ? 'image/webp'
-      : result.format === 'png'
-      ? 'image/png'
-      : 'image/jpeg';
+        ? 'image/webp'
+        : result.format === 'png'
+          ? 'image/png'
+          : 'image/jpeg';
 
   const ext = result.format === 'jpeg' ? 'jpg' : result.format;
 

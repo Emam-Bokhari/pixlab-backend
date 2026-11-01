@@ -24,14 +24,14 @@ const resizePhoto = catchAsync(async (req, res) => {
     result.format === 'jpeg' || result.format === 'jpg'
       ? 'image/jpeg'
       : result.format === 'webp'
-      ? 'image/webp'
-      : result.format === 'avif'
-      ? 'image/avif'
-      : result.format === 'tiff'
-      ? 'image/tiff'
-      : result.format === 'gif'
-      ? 'image/gif'
-      : 'image/png';
+        ? 'image/webp'
+        : result.format === 'avif'
+          ? 'image/avif'
+          : result.format === 'tiff'
+            ? 'image/tiff'
+            : result.format === 'gif'
+              ? 'image/gif'
+              : 'image/png';
 
   const ext = result.format === 'jpeg' ? 'jpg' : result.format;
 

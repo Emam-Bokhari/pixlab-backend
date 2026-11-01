@@ -15,7 +15,12 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
 
 const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
   if (!file.mimetype || !ALLOWED_IMAGE_MIME_TYPES.has(file.mimetype)) {
-    return cb(new HttpError(400, `Invalid file type: ${file.mimetype}. Allowed: PNG, JPEG, WEBP, BMP, TIFF, GIF, AVIF`));
+    return cb(
+      new HttpError(
+        400,
+        `Invalid file type: ${file.mimetype}. Allowed: PNG, JPEG, WEBP, BMP, TIFF, GIF, AVIF`,
+      ),
+    );
   }
   cb(null, true);
 };
@@ -27,7 +32,6 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB max
   },
 });
-
 
 const fileUploadHandler = () => {
   return upload.single('image');

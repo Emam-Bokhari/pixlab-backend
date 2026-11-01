@@ -20,4 +20,3 @@ export const RESIZE_LIMITS = {
   MAX_DIMENSION: 8000,
   MAX_INPUT_FILE_SIZE_MB: 25,
 };
-

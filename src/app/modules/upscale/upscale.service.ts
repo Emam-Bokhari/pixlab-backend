@@ -86,17 +86,32 @@ const upscaleImage = async (
   }
 
   const originalInfo = await getImageDimensionInfo(originalBuffer);
-  const { buffer: upscaledBuffer, format } = await performUpscale(originalBuffer, scale, metadata.format);
+  const { buffer: upscaledBuffer, format } = await performUpscale(
+    originalBuffer,
+    scale,
+    metadata.format,
+  );
   const upscaledInfo = await getImageDimensionInfo(upscaledBuffer);
 
   const widthPercent = originalInfo.widthPx
-    ? Number((((upscaledInfo.widthPx - originalInfo.widthPx) / originalInfo.widthPx) * 100).toFixed(2))
+    ? Number(
+        (((upscaledInfo.widthPx - originalInfo.widthPx) / originalInfo.widthPx) * 100).toFixed(2),
+      )
     : 0;
   const heightPercent = originalInfo.heightPx
-    ? Number((((upscaledInfo.heightPx - originalInfo.heightPx) / originalInfo.heightPx) * 100).toFixed(2))
+    ? Number(
+        (((upscaledInfo.heightPx - originalInfo.heightPx) / originalInfo.heightPx) * 100).toFixed(
+          2,
+        ),
+      )
     : 0;
   const sizeBytesPercent = originalInfo.sizeBytes
-    ? Number((((upscaledInfo.sizeBytes - originalInfo.sizeBytes) / originalInfo.sizeBytes) * 100).toFixed(2))
+    ? Number(
+        (
+          ((upscaledInfo.sizeBytes - originalInfo.sizeBytes) / originalInfo.sizeBytes) *
+          100
+        ).toFixed(2),
+      )
     : 0;
   const sizeMBDiff = Number((upscaledInfo.sizeMB - originalInfo.sizeMB).toFixed(3));
 

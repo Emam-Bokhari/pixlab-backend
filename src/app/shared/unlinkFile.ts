@@ -9,9 +9,7 @@ const unlinkFile = async (filePath: string): Promise<void> => {
     if (!filePath) return;
 
     // normalize relative path by removing leading uploads prefix
-    const cleanPath = filePath
-      .replace(/^(\/)?uploads\//, '')
-      .replace(/^\/+/, '');
+    const cleanPath = filePath.replace(/^(\/)?uploads\//, '').replace(/^\/+/, '');
 
     const resolvedPath = path.join(UPLOAD_BASE_DIR, cleanPath);
 

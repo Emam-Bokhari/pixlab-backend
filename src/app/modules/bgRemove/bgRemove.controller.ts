@@ -31,7 +31,8 @@ const removeBg = catchAsync(async (req: Request, res: Response) => {
 
   const origMeta = await sharp(file.buffer).metadata();
   const origBytes = file.buffer.length;
-  const origFormat: string = (origMeta.format as string) || (file.mimetype ? file.mimetype.split('/')[1] : 'jpeg') || 'jpeg';
+  const origFormat: string =
+    (origMeta.format as string) || (file.mimetype ? file.mimetype.split('/')[1] : 'jpeg') || 'jpeg';
   const originalMime = file.mimetype || `image/${origFormat}`;
   const originalBase64 = `data:${originalMime};base64,${file.buffer.toString('base64')}`;
 

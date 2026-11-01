@@ -7,11 +7,7 @@ export const removeBackground = async (
 ): Promise<Buffer> => {
   // Normalize input image (JPG, JPEG, WEBP, PNG, etc.) to a 4-channel RGBA PNG
   // and auto-rotate according to EXIF metadata
-  const normalizedPngBuffer = await sharp(imageBuffer)
-    .rotate()
-    .ensureAlpha()
-    .png()
-    .toBuffer();
+  const normalizedPngBuffer = await sharp(imageBuffer).rotate().ensureAlpha().png().toBuffer();
 
   // Create a Blob with explicit image/png mime type for @imgly
   const inputBlob = new Blob([new Uint8Array(normalizedPngBuffer)], { type: 'image/png' });

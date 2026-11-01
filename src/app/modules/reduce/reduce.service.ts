@@ -29,7 +29,12 @@ const reduceImageSize = async (
 
   const reductionPercentage =
     originalInfo.sizeBytes > 0
-      ? Number((((originalInfo.sizeBytes - reducedInfo.sizeBytes) / originalInfo.sizeBytes) * 100).toFixed(2))
+      ? Number(
+          (
+            ((originalInfo.sizeBytes - reducedInfo.sizeBytes) / originalInfo.sizeBytes) *
+            100
+          ).toFixed(2),
+        )
       : 0;
 
   return {

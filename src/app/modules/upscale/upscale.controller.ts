@@ -19,12 +19,12 @@ const upscalePhoto = catchAsync(async (req, res) => {
     result.format === 'jpeg'
       ? 'image/jpeg'
       : result.format === 'webp'
-      ? 'image/webp'
-      : result.format === 'avif'
-      ? 'image/avif'
-      : result.format === 'tiff'
-      ? 'image/tiff'
-      : 'image/png';
+        ? 'image/webp'
+        : result.format === 'avif'
+          ? 'image/avif'
+          : result.format === 'tiff'
+            ? 'image/tiff'
+            : 'image/png';
 
   const ext = result.format === 'jpeg' ? 'jpg' : result.format;
 
