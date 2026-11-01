@@ -7,7 +7,6 @@ export const emailWorker = new Worker(
   'emailQueue',
   async (job) => {
     const { email, subject, body } = job.data;
-    // send email
     await emailHelper.sendEmail({
       to: email,
       subject,

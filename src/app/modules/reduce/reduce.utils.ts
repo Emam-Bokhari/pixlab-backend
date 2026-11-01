@@ -28,14 +28,12 @@ export const compressImageToTargetSize = async (
 
   let format = originalFormat.toLowerCase();
   if (format === 'bmp' || format === 'png') {
-    // BMP and PNG are lossless/uncompressed. For lossy size reduction,
-    // we convert them to jpeg to retain size and quality.
+    // convert uncompressed formats to jpeg for efficient size reduction
     format = 'jpeg';
   } else if (format === 'jpg') {
     format = 'jpeg';
   }
 
-  // Iterative scaling search
   const scaleFactors = [1.0, 0.85, 0.7, 0.5, 0.35, 0.2, 0.1];
   const minQuality = 20;
   const maxQuality = 90;
@@ -49,7 +47,6 @@ export const compressImageToTargetSize = async (
     let scaleBestBuffer: Buffer | null = null;
     let scaleBestSize = 0;
 
-    // Binary search for quality
     for (let iter = 0; iter < 4; iter++) {
       const q = Math.round((lowQ + highQ) / 2);
 
@@ -68,9 +65,9 @@ export const compressImageToTargetSize = async (
       if (size <= targetSizeBytes) {
         scaleBestBuffer = buf;
         scaleBestSize = size;
-        lowQ = q + 1; // Try to get higher quality
+        lowQ = q + 1;
       } else {
-        highQ = q - 1; // Too large, decrease quality
+        highQ = q - 1;
       }
     }
 
@@ -85,7 +82,7 @@ export const compressImageToTargetSize = async (
     }
   }
 
-  // Fallback to absolute minimum scale and quality
+  // fallback to minimum scale if target size not reached
   const minScale = 0.1;
   const w = Math.round(originalWidth * minScale);
   const h = Math.round(originalHeight * minScale);

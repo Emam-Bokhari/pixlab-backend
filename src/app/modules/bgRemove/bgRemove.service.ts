@@ -38,17 +38,14 @@ const createBgRemoveJob = async (data: any): Promise<BgRemoveDocument> => {
       ? bgColor.trim().replace(/^#/, '').toUpperCase()
       : undefined;
 
-  // Generate ID only once
   const bgRemovePhotoId = await generateBgRemovePhotoId();
 
-  // Save original image
   const originalImage = await saveBgRemoveImage(
     originalBuffer,
     bgRemovePhotoId,
     'original',
   );
 
-  // Create DB record
   const job = new BgRemove({
     bgRemovePhotoId,
     originalImage,

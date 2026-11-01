@@ -8,15 +8,14 @@ const unlinkFile = async (filePath: string): Promise<void> => {
   try {
     if (!filePath) return;
 
-    // strip leading /uploads/ or uploads/ and any leading slashes
+    // normalize relative path by removing leading uploads prefix
     const cleanPath = filePath
-      .replace(/^(\/)?uploads\//, '') // remove uploads/ prefix
-      .replace(/^\/+/, ''); // remove any leading slashes
+      .replace(/^(\/)?uploads\//, '')
+      .replace(/^\/+/, '');
 
-    // use path.join instead of path.resolve to safely append to base dir
     const resolvedPath = path.join(UPLOAD_BASE_DIR, cleanPath);
 
-    // ensure file is inside uploads directory
+    // prevent path traversal outside uploads directory
     if (!resolvedPath.startsWith(UPLOAD_BASE_DIR)) {
       throw new HttpError(400, 'Invalid file path');
     }
@@ -24,7 +23,8 @@ const unlinkFile = async (filePath: string): Promise<void> => {
     try {
       await fs.access(resolvedPath);
     } catch {
-      return; // file doesn't exist → ignore silently
+      // skip silently if file does not exist
+      return;
     }
 
     await fs.unlink(resolvedPath);

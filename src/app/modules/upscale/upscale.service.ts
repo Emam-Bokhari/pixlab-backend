@@ -26,7 +26,7 @@ const performUpscale = async (
   const targetWidth = Math.round(originalWidth * scale);
   const targetHeight = Math.round(originalHeight * scale);
 
-  // Apply Lanczos3 high-quality resampling + unsharp masking for edge crispness
+  // lanczos3 resampling with unsharp masking for edge enhancement
   let pipeline = sharp(buffer)
     .rotate()
     .resize({

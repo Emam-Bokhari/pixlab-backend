@@ -9,7 +9,7 @@ class QueryBuilder<T> {
     this.query = query;
   }
 
-  // improved Search: Case insensitive search in multiple fields
+  // case-insensitive search across fields
   search(searchableFields: string[]) {
     const searchTerm = this.query?.searchTerm || this.query?.search;
     if (searchTerm) {
@@ -25,14 +25,13 @@ class QueryBuilder<T> {
     return this;
   }
 
-  // advanced Filter: Support for operators like (gt, lt, gte, lte)
+  // convert comparison keywords to mongoose operators
   filter() {
     const queryObj = { ...this.query };
     const excludeFields = ['searchTerm', 'search', 'sort', 'limit', 'page', 'fields'];
 
     excludeFields.forEach((el) => delete queryObj[el]);
 
-    // advanced filtering (Converting gt, lt, lte, gte to Mongoose operators)
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
 
@@ -41,14 +40,12 @@ class QueryBuilder<T> {
     return this;
   }
 
-  // dynamic sorting
   sort() {
     const sort = (this.query?.sort as string)?.split(',')?.join(' ') || '-createdAt';
     this.modelQuery = this.modelQuery.sort(sort);
     return this;
   }
 
-  // pagination
   paginate() {
     const page = Math.max(Number(this.query?.page) || 1, 1);
     const limit = Math.max(Number(this.query?.limit) || 10, 1);
@@ -58,14 +55,12 @@ class QueryBuilder<T> {
     return this;
   }
 
-  // field selection projection
   fields() {
     const fields = (this.query?.fields as string)?.split(',')?.join(' ') || '-__v';
     this.modelQuery = this.modelQuery.select(fields);
     return this;
   }
 
-  // populate support
   populate(options: string | any) {
     if (options) {
       this.modelQuery = this.modelQuery.populate(options);
@@ -73,7 +68,6 @@ class QueryBuilder<T> {
     return this;
   }
 
-  // count total documents
   async countTotal() {
     const totalQueries = this.modelQuery.getFilter();
 

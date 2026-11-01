@@ -4,11 +4,10 @@ import { logger } from '../shared/logger';
 
 const socket = (io: Server) => {
   io.on('connection', (socket) => {
-    logger.info(colors.blue('A User connected'));
+    logger.info(colors.blue('A client connected'));
 
-    // disconnect
     socket.on('disconnect', (reason) => {
-      logger.info(colors.red(`A user disconnect. Reason: ${reason}`));
+      logger.info(colors.red(`A client disconnected. Reason: ${reason}`));
     });
   });
 };

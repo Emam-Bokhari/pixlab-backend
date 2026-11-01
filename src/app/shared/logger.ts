@@ -4,21 +4,19 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 
 const { combine, timestamp, label, printf, colorize } = format;
 
-// custom log format
 const customFormat = printf(({ level, message, label, timestamp }) => {
   return `${timestamp} [${label}] ${level}: ${message}`;
 });
 
-// common file transport config
+// file transport options for log rotation
 const fileTransportConfig = (folder: string, type: string) => ({
   filename: path.join(process.cwd(), 'logs', 'winston', folder, `%DATE%-${type}.log`),
   datePattern: 'YYYY-MM-DD-HH',
-  zippedArchive: true, // compress archived files
+  zippedArchive: true,
   maxSize: '20m',
-  maxFiles: '14d', // 14 days of logs kept
+  maxFiles: '14d',
 });
 
-// main logger (for logging success messages)
 export const logger = createLogger({
   level: 'info',
   format: combine(
@@ -28,13 +26,12 @@ export const logger = createLogger({
   ),
   transports: [
     new transports.Console({
-      format: combine(colorize(), customFormat), // terminal colorized output
+      format: combine(colorize(), customFormat),
     }),
     new DailyRotateFile(fileTransportConfig('success', 'success')),
   ],
 });
 
-// error logger (for logging errors)
 export const errorLogger = createLogger({
   level: 'error',
   format: combine(

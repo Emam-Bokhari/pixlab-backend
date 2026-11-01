@@ -22,15 +22,10 @@ const generateYearBasedId = async (
 
   if (lastId) {
     const parts = lastId.split("-");
-
-    // Works for:
-    // REDUCED-PHOTO-2026-0001
-    // BG-REMOVE-PHOTO-2026-0001
-    // UPSCALED-PHOTO-2026-0001
-    // RESIZED-PHOTO-2026-0001
     const lastYear = parts[parts.length - 2];
     const lastSequence = parts[parts.length - 1];
 
+    // extract sequence number from last id if in current year
     if (
       lastYear === currentYear &&
       lastSequence &&
@@ -43,18 +38,14 @@ const generateYearBasedId = async (
   return `${prefix}-${currentYear}-${String(nextNumber).padStart(4, "0")}`;
 };
 
-// REDUCED PHOTO
 export const generateReducedPhotoId = () =>
   generateYearBasedId(Reduce, "reducedPhotoId", "REDUCED-PHOTO");
 
-// RESIZED PHOTO
 export const generateResizedPhotoId = () =>
   generateYearBasedId(Resize, "resizedPhotoId", "RESIZED-PHOTO");
 
-// UPSCALED PHOTO
 export const generateUpscalePhotoId = () =>
   generateYearBasedId(Upscale, "upscaledPhotoId", "UPSCALED-PHOTO");
 
-// BG REMOVE PHOTO
 export const generateBgRemovePhotoId = () =>
   generateYearBasedId(BgRemove, "bgRemovePhotoId", "BG-REMOVE-PHOTO");

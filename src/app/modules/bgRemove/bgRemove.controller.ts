@@ -3,7 +3,6 @@ import catchAsync from '../../shared/catchAsync';
 import { BgRemoveServices } from './bgRemove.service';
 import sendResponse from '../../shared/sendResponse';
 
-// POST /bg-remove
 const createBgRemoveJob = catchAsync(async (req: Request, res: Response) => {
   const result = await BgRemoveServices.createBgRemoveJob(req.body);
 
@@ -15,7 +14,6 @@ const createBgRemoveJob = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// GET /bg-remove/:jobId
 const getBgRemoveJobById = catchAsync(async (req: Request, res: Response) => {
   const jobId = req.params.jobId as string;
 
@@ -29,7 +27,6 @@ const getBgRemoveJobById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// GET /bg-remove
 const getAllBgRemoveJobs = catchAsync(async (req: Request, res: Response) => {
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
 

@@ -4,13 +4,7 @@ import config from '../../config';
 
 const BG_REMOVER_API_URL = config.bg_remover_api_url;
 
-/**
- * Removes image background using the local Python microservice.
- *
- * @param imageBuffer Original uploaded image.
- * @param bgColorHex Optional 6-digit hex color (e.g. "FFFFFF").
- *                   If omitted, the service returns a transparent PNG.
- */
+// send image buffer to background removal microservice
 export const removeBackground = async (
   imageBuffer: Buffer,
   bgColorHex?: string,
@@ -22,7 +16,7 @@ export const removeBackground = async (
     contentType: 'image/jpeg',
   });
 
-  // Only send bg_color when a valid value is provided.
+  // attach background color if provided
   if (typeof bgColorHex === 'string' && bgColorHex.trim().length > 0) {
     form.append('bg_color', bgColorHex.trim().replace(/^#/, '').toUpperCase());
   }

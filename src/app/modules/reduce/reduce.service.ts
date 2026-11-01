@@ -22,10 +22,8 @@ const reduceImageSize = async (
     throw new HttpError(404, 'Uploaded image file not found on server');
   }
 
-  // Read buffer
   const buffer = fs.readFileSync(filePath);
 
-  // Validate format using sharp
   let metadata;
   try {
     metadata = await sharp(buffer).metadata();
@@ -38,10 +36,8 @@ const reduceImageSize = async (
 
   const originalInfo = await getImageSizeInfo(buffer);
 
-  // Compress image
   const compressionResult = await compressImageToTargetSize(buffer, targetSizeKb, metadata.format);
 
-  // Save the reduced image
   const reducedImageUrl = await saveReducedImage(
     compressionResult.buffer,
     compressionResult.format,
@@ -49,15 +45,12 @@ const reduceImageSize = async (
 
   const reducedInfo = await getImageSizeInfo(compressionResult.buffer);
 
-  // Calculate stats
   const originalSize = originalInfo.sizeBytes;
   const reducedSize = reducedInfo.sizeBytes;
 
-  // Guard against division by zero
   const reductionPercentage =
     originalSize > 0 ? Number((((originalSize - reducedSize) / originalSize) * 100).toFixed(2)) : 0;
 
-  // Save to database
   const reduceRecord = new Reduce({
     originalImageName: path.basename(image),
     reducedImageUrl,

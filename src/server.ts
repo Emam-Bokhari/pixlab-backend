@@ -11,61 +11,52 @@ import './queues/index';
 let server: http.Server;
 
 const shutdown = async () => {
-  logger.info('🛑 Graceful shutdown started...');
+  logger.info('Graceful shutdown started');
 
   try {
-    // close BullMQ workers
     await Promise.all([emailWorker.close()]);
+    logger.info('Workers closed');
 
-    logger.info('✅ Workers closed');
-
-    // close BullMQ queues
     await Promise.all([emailQueue.close()]);
+    logger.info('Queues closed');
 
-    logger.info('✅ Queues closed');
-
-    // close HTTP server
     if (server) {
       server.close(() => {
-        logger.info('✅ HTTP server closed');
+        logger.info('HTTP server closed');
         process.exit(0);
       });
     } else {
       process.exit(0);
     }
   } catch (error) {
-    errorLogger.error('❌ Shutdown error', error);
+    errorLogger.error('Shutdown error', error);
     process.exit(1);
   }
 };
 
-// uncaught exception
+// handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  errorLogger.error('👿 uncaughtException detected', error);
+  errorLogger.error('Uncaught exception detected', error);
   shutdown();
 });
 
-// unhandled rejection
+// handle unhandled rejections
 process.on('unhandledRejection', (error) => {
-  errorLogger.error('👿 unhandledRejection detected', error);
+  errorLogger.error('Unhandled rejection detected', error);
   shutdown();
 });
 
-// kill signals
+// handle process termination
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 async function main() {
   try {
-    // DB connection
     await mongoose.connect(config.database_url as string);
+    logger.info('Database connected successfully');
 
-    logger.info('🐘 Database connected successfully');
-
-    // create HTTP server
     server = http.createServer(app);
 
-    // socket.io setup
     const io = new SocketIOServer(server, {
       pingTimeout: 60000,
       pingInterval: 25000,
@@ -77,15 +68,13 @@ async function main() {
 
     socketHelper.socket(io);
 
-    // global socket access
     (global as any).io = io;
 
-    // start server
     server.listen(config.port, () => {
-      logger.info(`🚀 Server running on port: ${config.port}`);
+      logger.info(`Server running on port ${config.port}`);
     });
   } catch (error) {
-    errorLogger.error('❌ Failed to start server', error);
+    errorLogger.error('Failed to start server', error);
     process.exit(1);
   }
 }
