@@ -1,270 +1,427 @@
-# AiSnapStudio — Backend API & Architecture Documentation
+# AiSnapStudio Backend
 
-> **Public Image Processing REST API**  
-> *Base API URL: `http://localhost:5000/api/v1`*  
-> *All endpoints are 100% public — no registration, login, token, or session required.*
+## Overview
+Public image processing REST API built with Node.js, Express, TypeScript, Sharp, and MongoDB.
 
----
+Base API URL: `http://localhost:5000/api/v1`
 
-## 1. Overview
+## Endpoints Summary
 
-**AiSnapStudio** is a fast, lightweight, and completely public image processing backend built with Node.js, Express, TypeScript, Sharp, and MongoDB.
+| Feature | Method | Endpoint |
+|---|---|---|
+| Background Removal | POST | /api/v1/bg-remove |
+| Image Upscaling | POST | /api/v1/upscales |
+| Image Size Reduction | POST | /api/v1/reduce |
+| Image Resizing | POST | /api/v1/resize |
+| Support Ticket | POST | /api/v1/supports |
 
-### Core Capabilities:
-1. **Background Removal (`/api/v1/bg-remove`)**: AI-powered background removal with optional background color replacement.
-2. **Image Upscaling (`/api/v1/upscales`)**: Free, high-performance image upscaling using Lanczos3 resampling and edge unsharp masking.
-3. **Image Size Reduction (`/api/v1/reduce`)**: Compress images to meet strict target file size limits (in KB) while preserving maximum visual quality.
-4. **Image Resizing (`/api/v1/resize`)**: Precision pixel dimension resizing with smart cropping and cover aspect ratio preservation.
-5. **Support Form (`/api/v1/supports`)**: Public contact and support inquiry submission with automated email notifications.
+## Image Processing Specifications
 
----
+* Request format: `multipart/form-data`
+* File field name: `image`
+* Supported formats: PNG, JPEG, JPG, WEBP, BMP, TIFF, GIF, AVIF
+* Multer upload limit: 50 MB
+* Upscale max file size: 20 MB
+* Resize max file size: 25 MB
+* Response body: Raw binary image data
+* Metadata delivery: Custom HTTP response headers
 
-## 2. API Reference
+## API Reference
 
-All requests accept standard multipart/form-data or application/json payloads. No authorization headers are needed.
+### 1. Background Removal
 
-### 2.1 Background Removal
+`POST /api/v1/bg-remove`
 
-- **`POST /api/v1/bg-remove`**
-  - **Body** (multipart/form-data):
-    - `image`: File (PNG, JPEG, WebP, etc.)
-    - `bgColorHex` (optional): Hex code for background color (e.g. `FFFFFF` or `#FFFFFF`). Omit for transparent background.
-  - **Response**:
-    ```json
+Removes image background and returns a PNG. Optionally fills the background with a solid hex color.
+
+Request Body (`multipart/form-data`):
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| image | File | Yes | Image file to process |
+| bgColor | String | No | Hex color code (example: FFFFFF or #FFFFFF) |
+
+Response:
+* Content-Type: `image/png`
+* Body: Binary PNG data
+
+Response Headers:
+
+| Header | Description |
+|---|---|
+| Content-Disposition | attachment; filename="bg-removed.png" |
+| X-Background-Color | Applied hex color code (present if bgColor was passed) |
+
+Request Example:
+
+```javascript
+const formData = new FormData();
+formData.append('image', file);
+formData.append('bgColor', '#FFFFFF');
+
+const response = await fetch('http://localhost:5000/api/v1/bg-remove', {
+  method: 'POST',
+  body: formData,
+});
+
+const blob = await response.blob();
+const imageUrl = URL.createObjectURL(blob);
+```
+
+### 2. Image Upscaling
+
+`POST /api/v1/upscales`
+
+Enlarges image by a scale factor using Lanczos3 resampling and sharpening.
+
+Request Body (`multipart/form-data`):
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| image | File | Yes | Image file up to 20 MB |
+| scale | Number | No | Scale multiplier: 1 to 4 (default: 2) |
+
+Response:
+* Content-Type: Matches input format
+* Body: Binary image data
+
+Response Headers:
+
+| Header | Description |
+|---|---|
+| Content-Disposition | attachment; filename="upscaled.<ext>" |
+| X-Scale | Applied scale factor |
+| X-Original-Width | Original width in pixels |
+| X-Original-Height | Original height in pixels |
+| X-Original-Size-KB | Original file size in KB |
+| X-Original-Size-MB | Original file size in MB |
+| X-Upscaled-Width | Output width in pixels |
+| X-Upscaled-Height | Output height in pixels |
+| X-Upscaled-Size-KB | Output file size in KB |
+| X-Upscaled-Size-MB | Output file size in MB |
+| X-Width-Increase-Percent | Width increase percentage |
+| X-Height-Increase-Percent | Height increase percentage |
+| X-Size-Increase-Percent | File size increase percentage |
+| X-Size-MB-Diff | File size difference in MB |
+
+Request Example:
+
+```javascript
+const formData = new FormData();
+formData.append('image', file);
+formData.append('scale', '2');
+
+const response = await fetch('http://localhost:5000/api/v1/upscales', {
+  method: 'POST',
+  body: formData,
+});
+
+const scale = response.headers.get('X-Scale');
+const upscaledWidth = response.headers.get('X-Upscaled-Width');
+const blob = await response.blob();
+const imageUrl = URL.createObjectURL(blob);
+```
+
+### 3. Image Size Reduction
+
+`POST /api/v1/reduce`
+
+Compresses image to reach a target file size in kilobytes.
+
+Request Body (`multipart/form-data`):
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| image | File | Yes | Image file to compress |
+| targetSizeKb | Number | Yes | Target size in kilobytes (positive number) |
+
+Response:
+* Content-Type: Matches input format
+* Body: Binary image data
+
+Response Headers:
+
+| Header | Description |
+|---|---|
+| Content-Disposition | attachment; filename="reduced.<ext>" |
+| X-Original-Width | Original width in pixels |
+| X-Original-Height | Original height in pixels |
+| X-Original-Size-KB | Original file size in KB |
+| X-Original-Size-MB | Original file size in MB |
+| X-Reduced-Width | Output width in pixels |
+| X-Reduced-Height | Output height in pixels |
+| X-Reduced-Size-KB | Output file size in KB |
+| X-Reduced-Size-MB | Output file size in MB |
+| X-Reduction-Percent | Size reduction percentage |
+| X-Target-Size-KB | Target size requested in KB |
+
+Request Example:
+
+```javascript
+const formData = new FormData();
+formData.append('image', file);
+formData.append('targetSizeKb', '150');
+
+const response = await fetch('http://localhost:5000/api/v1/reduce', {
+  method: 'POST',
+  body: formData,
+});
+
+const reductionPercent = response.headers.get('X-Reduction-Percent');
+const blob = await response.blob();
+const imageUrl = URL.createObjectURL(blob);
+```
+
+### 4. Image Resizing
+
+`POST /api/v1/resize`
+
+Resizes image to specific dimensions with cover fit mode and attention cropping.
+
+Request Body (`multipart/form-data`):
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| image | File | Yes | Image file up to 25 MB |
+| width | Number | Yes | Target width in pixels (8 to 8000) |
+| height | Number | Yes | Target height in pixels (8 to 8000) |
+
+Response:
+* Content-Type: Matches input format
+* Body: Binary image data
+
+Response Headers:
+
+| Header | Description |
+|---|---|
+| Content-Disposition | attachment; filename="resized.<ext>" |
+| X-Original-Width | Original width in pixels |
+| X-Original-Height | Original height in pixels |
+| X-Original-Size-KB | Original file size in KB |
+| X-Original-Size-MB | Original file size in MB |
+| X-Resized-Width | Output width in pixels |
+| X-Resized-Height | Output height in pixels |
+| X-Resized-Size-KB | Output file size in KB |
+| X-Resized-Size-MB | Output file size in MB |
+
+Request Example:
+
+```javascript
+const formData = new FormData();
+formData.append('image', file);
+formData.append('width', '800');
+formData.append('height', '600');
+
+const response = await fetch('http://localhost:5000/api/v1/resize', {
+  method: 'POST',
+  body: formData,
+});
+
+const resizedWidth = response.headers.get('X-Resized-Width');
+const blob = await response.blob();
+const imageUrl = URL.createObjectURL(blob);
+```
+
+### 5. Support Ticket
+
+`POST /api/v1/supports`
+
+Submits a support request to MongoDB and adds an email notification job to BullMQ queue.
+
+Request Body (`application/json`):
+
+| Field | Type | Required | Validation |
+|---|---|---|---|
+| name | String | Yes | 2 to 100 characters |
+| email | String | Yes | Valid email address |
+| subject | String | Yes | 5 to 150 characters |
+| message | String | Yes | 10 to 2000 characters |
+
+Payload Example:
+
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "subject": "Inquiry about batch operations",
+  "message": "Hello, I would like to know if batch resize is supported."
+}
+```
+
+Response Body (`application/json`, 201 Created):
+
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "Support request created successfully",
+  "data": {
+    "_id": "6722026abc1234567890ef01",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "subject": "Inquiry about batch operations",
+    "message": "Hello, I would like to know if batch resize is supported.",
+    "status": "OPEN",
+    "isDeleted": false
+  }
+}
+```
+
+## Error Handling
+
+All errors return JSON structured by the global error handler:
+
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "statusCode": 400,
+  "error": [
     {
-      "success": true,
-      "statusCode": 201,
-      "message": "Background removed successfully",
-      "data": {
-        "bgRemovePhotoId": "BG-REMOVE-PHOTO-2026-0001",
-        "originalImage": "/uploads/bg-remove/BG-REMOVE-PHOTO-2026-0001-original.png",
-        "processedImage": "/uploads/bg-remove/BG-REMOVE-PHOTO-2026-0001-processed.png",
-        "bgColorHex": "FFFFFF",
-        "status": "success"
-      }
+      "path": "",
+      "message": "Error description"
     }
-    ```
+  ],
+  "stack": null
+}
+```
 
-- **`GET /api/v1/bg-remove`**
-  - Returns all background removal jobs sorted by most recent first.
+Status Codes:
 
-- **`GET /api/v1/bg-remove/:jobId`**
-  - Returns a specific background removal job by MongoDB ID.
+| Code | Meaning |
+|---|---|
+| 400 | Bad request (validation error, invalid file type, missing required fields) |
+| 404 | Route not found |
+| 500 | Internal server error |
 
----
+Client Handling Example:
 
-### 2.2 Image Upscaler
+```javascript
+const response = await fetch('http://localhost:5000/api/v1/resize', {
+  method: 'POST',
+  body: formData,
+});
 
-- **`POST /api/v1/upscales`**
-  - **Body** (multipart/form-data):
-    - `image`: File (PNG, JPEG, WebP, etc.)
-    - `scale` (optional): Scale factor (`2` to `4`, default: `2`)
-  - **Response**:
-    ```json
-    {
-      "success": true,
-      "statusCode": 200,
-      "message": "Image upscaled successfully",
-      "data": {
-        "upscaledPhotoId": "UPSCALED-PHOTO-2026-0001",
-        "originalImage": "/uploads/upscaleOriginal/UPSCALED-PHOTO-2026-0001-original.png",
-        "upscaledImage": "/uploads/upscaledImage/UPSCALED-PHOTO-2026-0001.png",
-        "scale": 2,
-        "original": {
-          "widthPx": 800,
-          "heightPx": 600,
-          "sizeBytes": 120400,
-          "sizeKB": 117.58,
-          "sizeMB": 0.115
-        },
-        "upscaled": {
-          "widthPx": 1600,
-          "heightPx": 1200,
-          "sizeBytes": 420800,
-          "sizeKB": 410.94,
-          "sizeMB": 0.401
-        },
-        "increase": {
-          "widthPercent": 100,
-          "heightPercent": 100,
-          "sizeBytesPercent": 249.5,
-          "sizeMBDiff": 0.286
-        },
-        "didUpscale": true,
-        "status": "success"
-      }
-    }
-    ```
+if (!response.ok) {
+  const errorData = await response.json();
+  throw new Error(errorData.message);
+}
 
-- **`GET /api/v1/upscales`**
-  - Returns all upscaled images sorted by most recent first.
+const blob = await response.blob();
+```
 
----
+## Tech Stack
 
-### 2.3 Image Size Reducer
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js, TypeScript |
+| Framework | Express 5 |
+| Image Processing | Sharp, @imgly/background-removal-node |
+| Database | MongoDB, Mongoose |
+| File Upload | Multer |
+| Queue System | BullMQ, Redis |
+| Email Service | Nodemailer, Resend |
+| Validation | Zod |
+| Logging | Winston, Morgan |
 
-- **`POST /api/v1/reduce`**
-  - **Body** (multipart/form-data):
-    - `image`: File
-    - `data`: JSON string `{"targetSizeKb": 150}`
-  - **Response**:
-    ```json
-    {
-      "success": true,
-      "statusCode": 200,
-      "message": "Image size reduced successfully",
-      "data": {
-        "reducedPhotoId": "REDUCED-PHOTO-2026-0001",
-        "originalImageName": "input.jpg",
-        "reducedImageUrl": "/uploads/reduce/REDUCED-PHOTO-2026-0001.jpg",
-        "original": {
-          "widthPx": 2400,
-          "heightPx": 1600,
-          "sizeBytes": 2048576,
-          "sizeKB": 2000.56,
-          "sizeMB": 1.954
-        },
-        "reduced": {
-          "widthPx": 1200,
-          "heightPx": 800,
-          "sizeBytes": 149800,
-          "sizeKB": 146.29,
-          "sizeMB": 0.143
-        },
-        "reductionPercentage": 92.69,
-        "targetSizeKb": 150,
-        "format": "jpg"
-      }
-    }
-    ```
+## Environment Variables
 
-- **`GET /api/v1/reduce`**
-  - Returns all reduced images sorted by most recent first.
+Configuration options for `.env`:
 
----
+```env
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+DATABASE_URL=mongodb://localhost:27017/aisnapstudio
+SUPPORT_EMAIL=support@aisnapstudio.com
 
-### 2.4 Image Dimension Resizer
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
 
-- **`POST /api/v1/resize`**
-  - **Body** (multipart/form-data):
-    - `image`: File
-    - `width`: Number (e.g. `1200`)
-    - `height`: Number (e.g. `800`)
-  - **Response**:
-    ```json
-    {
-      "success": true,
-      "statusCode": 200,
-      "message": "Image resized successfully",
-      "data": {
-        "resizedPhotoId": "RESIZED-PHOTO-2026-0001",
-        "originalImage": "/uploads/resize-original/RESIZED-PHOTO-2026-0001.png",
-        "resizedImage": "/uploads/resize/RESIZED-PHOTO-2026-0001.png",
-        "original": {
-          "widthPx": 1920,
-          "heightPx": 1080,
-          "sizeBytes": 1540000,
-          "sizeKB": 1503.91,
-          "sizeMB": 1.469,
-          "format": "png"
-        },
-        "resized": {
-          "widthPx": 1200,
-          "heightPx": 800,
-          "sizeBytes": 850000,
-          "sizeKB": 830.08,
-          "sizeMB": 0.811,
-          "format": "png"
-        },
-        "resizeParams": {
-          "width": 1200,
-          "height": 800,
-          "fit": "cover",
-          "cropStrategy": "attention"
-        },
-        "status": "success"
-      }
-    }
-    ```
+EMAIL_FROM=no-reply@aisnapstudio.com
+EMAIL_USER=your-smtp-user
+EMAIL_PASS=your-smtp-pass
+EMAIL_PORT=587
+EMAIL_HOST=smtp.gmail.com
 
-- **`GET /api/v1/resize`**
-  - Returns all resized images sorted by most recent first.
+RESEND_API_KEY=re_xxxxxxxxxxxx
+DEFAULT_EMAIL_FROM=no-reply@aisnapstudio.com
 
----
+BG_REMOVER_API_URL=http://localhost:8000
+```
 
-### 2.5 Support / Contact
+## Setup and Commands
 
-- **`POST /api/v1/supports`**
-  - **Body** (application/json):
-    ```json
-    {
-      "name": "Jane Doe",
-      "email": "jane@example.com",
-      "subject": "Inquiry about batch operations",
-      "message": "Hello, I would like to know if batch resize is supported."
-    }
-    ```
-  - **Response**:
-    ```json
-    {
-      "success": true,
-      "statusCode": 201,
-      "message": "Support request created successfully",
-      "data": {
-        "_id": "6722026abc1234567890ef01",
-        "name": "Jane Doe",
-        "email": "jane@example.com",
-        "subject": "Inquiry about batch operations",
-        "message": "Hello, I would like to know if batch resize is supported.",
-        "status": "open"
-      }
-    }
-    ```
+Install dependencies:
 
----
+```bash
+npm install
+```
 
-## 3. Technology Stack
+Development server:
 
-- **Runtime**: Node.js, TypeScript
-- **Framework**: Express.js
-- **Database**: MongoDB, Mongoose
-- **Image Processing**: Sharp (libvips)
-- **Queues**: Redis, BullMQ (email queue worker)
-- **Static Assets**: Hosted under `/uploads`
+```bash
+npm run dev
+```
 
----
+Build:
 
-## 4. Getting Started
+```bash
+npm run build
+```
 
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+Production server:
 
-2. **Environment Variables (`.env`)**:
-   ```env
-   PORT=5000
-   DATABASE_URL=mongodb://localhost:27017/aisnapstudio
-   NODE_ENV=development
-   SUPPORT_EMAIL=support@aisnapstudio.com
-   FRONTEND_URL=http://localhost:3000
-   REDIS_HOST=127.0.0.1
-   REDIS_PORT=6379
-   EMAIL_FROM=no-reply@aisnapstudio.com
-   EMAIL_USER=your-smtp-user
-   EMAIL_PASS=your-smtp-pass
-   EMAIL_PORT=587
-   EMAIL_HOST=smtp.gmail.com
-   BG_REMOVER_API_URL=http://localhost:8000
-   ```
+```bash
+npm run start:prod
+```
 
-3. **Development**:
-   ```bash
-   npm run dev
-   ```
+Linting and formatting:
 
-4. **Build & Production**:
-   ```bash
-   npm run build
-   npm run start:prod
-   ```
+```bash
+npm run lint
+npm run lint:fix
+npm run format
+```
+
+## Project Structure
+
+```
+src/
+├── app.ts
+├── server.ts
+├── app/
+│   ├── config/
+│   │   └── index.ts
+│   ├── errors/
+│   │   ├── HttpError.ts
+│   │   └── handleZodValidationError.ts
+│   ├── interface/
+│   │   └── error.ts
+│   ├── middlewares/
+│   │   ├── fileUploadHandler.ts
+│   │   ├── globalErrorHandler.ts
+│   │   └── validateRequestSchema.ts
+│   ├── modules/
+│   │   ├── bgRemove/
+│   │   ├── reduce/
+│   │   ├── resize/
+│   │   ├── support/
+│   │   └── upscale/
+│   ├── routes/
+│   │   ├── index.ts
+│   │   └── v1.routes.ts
+│   └── shared/
+│       ├── catchAsync.ts
+│       ├── emailTemplate.ts
+│       ├── logger.ts
+│       ├── morgan.ts
+│       └── sendResponse.ts
+└── queues/
+    ├── index.ts
+    └── email/
+        ├── email.queue.ts
+        └── email.worker.ts
+```

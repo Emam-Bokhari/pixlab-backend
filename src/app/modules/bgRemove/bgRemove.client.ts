@@ -15,7 +15,7 @@ export const removeBackground = async (
     model: 'medium', // "small" | "medium" | "large"
     output: {
       format: 'image/png',
-      quality: 1,
+      quality: 1, 
     },
   });
 
