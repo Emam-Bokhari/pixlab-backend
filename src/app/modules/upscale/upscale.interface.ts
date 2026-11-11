@@ -1,5 +1,7 @@
+import { SendBinaryResponseOptions } from '../../shared/sendBinaryResponse';
+
 export interface ImageDimensionInfo {
-  format?: string;
+  format?: string | undefined;
   widthPx: number;
   heightPx: number;
   sizeBytes: number;
@@ -19,18 +21,14 @@ export interface UpscaleIncreaseInfo {
   sizeMBDiff: number;
 }
 
-export interface UpscaleResult {
-  buffer: Buffer;
-  format: string;
-  scale: number;
-  original: ImageDimensionInfo;
-  upscaled: ImageDimensionInfo;
-  increase: UpscaleIncreaseInfo;
-}
-
 export interface UpscaleResponseData {
   original: ImageDimensionInfoWithData;
   current: ImageDimensionInfoWithData;
   scale: number;
   increase: UpscaleIncreaseInfo;
+}
+
+export interface UpscaleResult {
+  binary: SendBinaryResponseOptions;
+  data: UpscaleResponseData;
 }

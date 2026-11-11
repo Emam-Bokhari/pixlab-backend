@@ -8,8 +8,8 @@ export const connection = new IORedis({
   maxRetriesPerRequest: null,
 });
 
-connection.on('error', (err) => {
-  // Suppress unhandled redis connection error when redis is offline
+connection.on('error', () => {
+  // suppress unhandled connection error when redis is offline
 });
 
 export const defaultJobOptions = {

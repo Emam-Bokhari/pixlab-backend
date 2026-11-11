@@ -1,7 +1,16 @@
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import { DEFAULT_RESIZE_FIT, DEFAULT_CROP_STRATEGY, RESIZE_LIMITS } from './resize.constant';
-import { ResizeRequestInput, ResizeResult } from './resize.interface';
+import {
+  bufferToBase64Url,
+  getFileExtension,
+  getMimeType,
+} from '../../shared/sendBinaryResponse';
+import { DEFAULT_CROP_STRATEGY, DEFAULT_RESIZE_FIT, RESIZE_LIMITS } from './resize.constant';
+import {
+  ImageDimensionInfoWithData,
+  ResizeRequestInput,
+  ResizeResult,
+} from './resize.interface';
 import { getImageDimensionInfo } from './resize.utils';
 
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'webp', 'gif', 'tiff', 'avif'];
@@ -68,18 +77,23 @@ const performResize = async (
 };
 
 const resizeImage = async (
-  input: ResizeRequestInput,
   file?: Express.Multer.File,
+  input?: ResizeRequestInput,
 ): Promise<ResizeResult> => {
-  if (!file || !file.buffer) throw new HttpError(400, 'No file provided');
+  if (!file || !file.buffer) {
+    throw new HttpError(400, 'No image file provided');
+  }
 
-  if (input.width === undefined || input.height === undefined) {
+  const width = Number(input?.width);
+  const height = Number(input?.height);
+
+  if (!width || !height) {
     throw new HttpError(400, 'width and height are required');
   }
 
   const originalBuffer = file.buffer;
-
   const fileSizeMB = originalBuffer.length / (1024 * 1024);
+
   if (fileSizeMB > RESIZE_LIMITS.MAX_INPUT_FILE_SIZE_MB) {
     throw new HttpError(
       400,
@@ -87,27 +101,54 @@ const resizeImage = async (
     );
   }
 
+  let metadata: sharp.Metadata;
   try {
-    const metadata = await sharp(originalBuffer).metadata();
+    metadata = await sharp(originalBuffer).metadata();
     if (!metadata.format || !ALLOWED_FORMATS.includes(metadata.format.toLowerCase())) {
       throw new Error(`Unsupported image format. Allowed: ${ALLOWED_FORMATS.join(', ')}`);
     }
-  } catch (err: any) {
-    throw new HttpError(400, err.message || 'Invalid or unsupported image file');
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Invalid or unsupported image file';
+    throw new HttpError(400, message);
   }
 
-  const { width, height } = input;
   validateTargetDimensions(width, height);
 
   const originalInfo = await getImageDimensionInfo(originalBuffer);
-  const { buffer: resizedBuffer, format } = await performResize(originalBuffer, width, height);
+  const { buffer: resizedBuffer, format } = await performResize(
+    originalBuffer,
+    width,
+    height,
+  );
   const resizedInfo = await getImageDimensionInfo(resizedBuffer);
 
+  const originalMime = file.mimetype || getMimeType(originalInfo.format);
+  const resizedMime = getMimeType(format);
+  const ext = getFileExtension(format);
+
+  const originalData: ImageDimensionInfoWithData = {
+    ...originalInfo,
+    imageUrl: bufferToBase64Url(originalBuffer, originalMime),
+  };
+
+  const currentData: ImageDimensionInfoWithData = {
+    ...resizedInfo,
+    imageUrl: bufferToBase64Url(resizedBuffer, resizedMime),
+  };
+
   return {
-    buffer: resizedBuffer,
-    format,
-    original: originalInfo,
-    resized: resizedInfo,
+    binary: {
+      buffer: resizedBuffer,
+      filename: `resized.${ext}`,
+      contentType: resizedMime,
+      original: originalData,
+      processed: currentData,
+      processedPrefix: 'Resized',
+    },
+    data: {
+      original: originalData,
+      current: currentData,
+    },
   };
 };
 

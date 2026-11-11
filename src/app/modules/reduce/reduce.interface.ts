@@ -1,18 +1,11 @@
+import { SendBinaryResponseOptions } from '../../shared/sendBinaryResponse';
+
 export interface ImageSizeInfo {
   widthPx: number;
   heightPx: number;
   sizeBytes: number;
   sizeKB: number;
   sizeMB: number;
-}
-
-export interface ReduceResult {
-  buffer: Buffer;
-  format: string;
-  original: ImageSizeInfo;
-  reduced: ImageSizeInfo;
-  reductionPercentage: number;
-  targetSizeKb: number;
 }
 
 export interface ImageDetailsWithData extends ImageSizeInfo {
@@ -25,4 +18,9 @@ export interface ReduceResponseData {
   current: ImageDetailsWithData;
   targetSizeKb: number;
   reductionPercentage: number;
+}
+
+export interface ReduceResult {
+  binary: SendBinaryResponseOptions;
+  data: ReduceResponseData;
 }

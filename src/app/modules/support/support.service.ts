@@ -17,11 +17,11 @@ const sendSupportMessage = async (payload: TSupport) => {
   };
 
   try {
-    // Attempt sending via queue if Redis is running
+    // try sending via queue if redis is available
     await emailQueue.add('sendSupportEmail', emailData);
     logger.info('Support email added to queue');
-  } catch (queueError) {
-    // Fallback: send directly via nodemailer if queue is offline
+  } catch {
+    // fallback to nodemailer if queue is offline
     logger.info('Queue unavailable, sending email directly via nodemailer');
     try {
       await emailHelper.sendEmail({

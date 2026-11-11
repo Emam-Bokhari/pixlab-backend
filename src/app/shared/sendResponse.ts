@@ -11,17 +11,25 @@ type IData<T> = {
     total: number;
   };
   data?: T;
-  meta?: any;
+  meta?: Record<string, unknown>;
 };
 
 const sendResponse = <T>(res: Response, data: IData<T>) => {
-  const resData = {
+  const resData: Record<string, unknown> = {
     success: data.success,
+    statusCode: data.statusCode,
     message: data.message,
-    pagination: data.pagination,
     data: data.data,
-    meta: data.meta,
   };
+
+  if (data.pagination !== undefined) {
+    resData.pagination = data.pagination;
+  }
+
+  if (data.meta !== undefined) {
+    resData.meta = data.meta;
+  }
+
   res.status(data.statusCode).json(resData);
 };
 
