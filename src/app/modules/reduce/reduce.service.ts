@@ -1,30 +1,49 @@
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import { ReduceResult } from './reduce.interface';
-import { compressImageToTargetSize, getImageSizeInfo, ALLOWED_FORMATS } from './reduce.utils';
+import {
+  bufferToBase64Url,
+  getFileExtension,
+  getMimeType,
+} from '../../shared/sendBinaryResponse';
+import { ImageDetailsWithData, ReduceResult } from './reduce.interface';
+import {
+  ALLOWED_FORMATS,
+  compressImageToTargetSize,
+  getImageSizeInfo,
+} from './reduce.utils';
 
 const reduceImageSize = async (
-  file: Express.Multer.File,
-  targetSizeKb: number,
+  file?: Express.Multer.File,
+  targetSizeKbInput?: unknown,
 ): Promise<ReduceResult> => {
   if (!file || !file.buffer) {
     throw new HttpError(400, 'No image file provided');
   }
 
+  const targetSizeKb = Number(targetSizeKbInput);
+  if (!targetSizeKb || targetSizeKb <= 0) {
+    throw new HttpError(400, 'targetSizeKb must be a positive number');
+  }
+
   const buffer = file.buffer;
 
-  let metadata;
+  let metadata: sharp.Metadata;
   try {
     metadata = await sharp(buffer).metadata();
     if (!metadata.format || !ALLOWED_FORMATS.includes(metadata.format.toLowerCase())) {
       throw new Error('Unsupported image format. Allowed: PNG, JPG, JPEG, BMP, WEBP');
     }
-  } catch (err: any) {
-    throw new HttpError(400, err.message || 'Invalid or unsupported image file');
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Invalid or unsupported image file';
+    throw new HttpError(400, message);
   }
 
   const originalInfo = await getImageSizeInfo(buffer);
-  const compressionResult = await compressImageToTargetSize(buffer, targetSizeKb, metadata.format);
+  const compressionResult = await compressImageToTargetSize(
+    buffer,
+    targetSizeKb,
+    metadata.format,
+  );
   const reducedInfo = await getImageSizeInfo(compressionResult.buffer);
 
   const reductionPercentage =
@@ -37,13 +56,41 @@ const reduceImageSize = async (
         )
       : 0;
 
-  return {
-    buffer: compressionResult.buffer,
+  const originalMime = file.mimetype || getMimeType(metadata.format);
+  const reducedMime = getMimeType(compressionResult.format);
+  const ext = getFileExtension(compressionResult.format);
+
+  const originalData: ImageDetailsWithData = {
+    ...originalInfo,
+    format: originalMime.split('/')[1] || 'jpeg',
+    imageUrl: bufferToBase64Url(buffer, originalMime),
+  };
+
+  const currentData: ImageDetailsWithData = {
+    ...reducedInfo,
     format: compressionResult.format,
-    original: originalInfo,
-    reduced: reducedInfo,
-    reductionPercentage,
-    targetSizeKb,
+    imageUrl: bufferToBase64Url(compressionResult.buffer, reducedMime),
+  };
+
+  return {
+    binary: {
+      buffer: compressionResult.buffer,
+      filename: `reduced.${ext}`,
+      contentType: reducedMime,
+      original: originalData,
+      processed: currentData,
+      processedPrefix: 'Reduced',
+      extraHeaders: {
+        'X-Reduction-Percent': reductionPercentage,
+        'X-Target-Size-KB': targetSizeKb,
+      },
+    },
+    data: {
+      original: originalData,
+      current: currentData,
+      targetSizeKb,
+      reductionPercentage,
+    },
   };
 };
 

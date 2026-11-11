@@ -1,6 +1,14 @@
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import { UpscaleResult } from './upscale.interface';
+import {
+  bufferToBase64Url,
+  getFileExtension,
+  getMimeType,
+} from '../../shared/sendBinaryResponse';
+import {
+  ImageDimensionInfoWithData,
+  UpscaleResult,
+} from './upscale.interface';
 import { getImageDimensionInfo } from './upscale.utils';
 
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp', 'tiff', 'avif'];
@@ -21,7 +29,6 @@ const performUpscale = async (
   let format = originalFormat.toLowerCase();
   if (format === 'jpg') format = 'jpeg';
 
-  // lanczos3 resampling with unsharp masking for edge enhancement
   let pipeline = sharp(buffer)
     .rotate()
     .resize({
@@ -61,28 +68,31 @@ const performUpscale = async (
 
 const upscaleImage = async (
   file?: Express.Multer.File,
-  requestedScale: number = 2,
+  requestedScale?: unknown,
 ): Promise<UpscaleResult> => {
-  if (!file || !file.buffer) throw new HttpError(400, 'No file provided');
+  if (!file || !file.buffer) {
+    throw new HttpError(400, 'No image file provided');
+  }
 
   const parsedScale = Number(requestedScale);
   const scale = parsedScale >= 1 && parsedScale <= 4 ? parsedScale : 2;
 
   const originalBuffer = file.buffer;
-
   const fileSizeMB = originalBuffer.length / (1024 * 1024);
+
   if (fileSizeMB > MAX_FILE_SIZE_MB) {
     throw new HttpError(400, `Image exceeds max allowed size of ${MAX_FILE_SIZE_MB}MB`);
   }
 
-  let metadata;
+  let metadata: sharp.Metadata;
   try {
     metadata = await sharp(originalBuffer).metadata();
     if (!metadata.format || !ALLOWED_FORMATS.includes(metadata.format.toLowerCase())) {
       throw new Error(`Unsupported image format. Allowed: ${ALLOWED_FORMATS.join(', ')}`);
     }
-  } catch (err: any) {
-    throw new HttpError(400, err.message || 'Invalid or unsupported image file');
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Invalid or unsupported image file';
+    throw new HttpError(400, message);
   }
 
   const originalInfo = await getImageDimensionInfo(originalBuffer);
@@ -115,13 +125,53 @@ const upscaleImage = async (
     : 0;
   const sizeMBDiff = Number((upscaledInfo.sizeMB - originalInfo.sizeMB).toFixed(3));
 
-  return {
-    buffer: upscaledBuffer,
+  const originalFormat =
+    originalInfo.format || (file.mimetype ? file.mimetype.split('/')[1] : 'jpeg') || 'jpeg';
+  const originalMime = file.mimetype || getMimeType(originalFormat);
+  const upscaledMime = getMimeType(format);
+  const ext = getFileExtension(format);
+
+  const originalData: ImageDimensionInfoWithData = {
+    ...originalInfo,
+    format: originalFormat,
+    imageUrl: bufferToBase64Url(originalBuffer, originalMime),
+  };
+
+  const currentData: ImageDimensionInfoWithData = {
+    ...upscaledInfo,
     format,
-    scale,
-    original: originalInfo,
-    upscaled: upscaledInfo,
-    increase: { widthPercent, heightPercent, sizeBytesPercent, sizeMBDiff },
+    imageUrl: bufferToBase64Url(upscaledBuffer, upscaledMime),
+  };
+
+  const increase = {
+    widthPercent,
+    heightPercent,
+    sizeBytesPercent,
+    sizeMBDiff,
+  };
+
+  return {
+    binary: {
+      buffer: upscaledBuffer,
+      filename: `upscaled.${ext}`,
+      contentType: upscaledMime,
+      original: originalData,
+      processed: currentData,
+      processedPrefix: 'Upscaled',
+      extraHeaders: {
+        'X-Scale': scale,
+        'X-Width-Increase-Percent': widthPercent,
+        'X-Height-Increase-Percent': heightPercent,
+        'X-Size-Increase-Percent': sizeBytesPercent,
+        'X-Size-MB-Diff': sizeMBDiff,
+      },
+    },
+    data: {
+      original: originalData,
+      current: currentData,
+      scale,
+      increase,
+    },
   };
 };
 

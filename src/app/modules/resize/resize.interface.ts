@@ -1,3 +1,5 @@
+import { SendBinaryResponseOptions } from '../../shared/sendBinaryResponse';
+
 export interface ImageDimensionInfo {
   widthPx: number;
   heightPx: number;
@@ -12,18 +14,16 @@ export interface ImageDimensionInfoWithData extends ImageDimensionInfo {
 }
 
 export interface ResizeRequestInput {
-  width: number;
-  height: number;
-}
-
-export interface ResizeResult {
-  buffer: Buffer;
-  format: string;
-  original: ImageDimensionInfo;
-  resized: ImageDimensionInfo;
+  width: unknown;
+  height: unknown;
 }
 
 export interface ResizeResponseData {
   original: ImageDimensionInfoWithData;
   current: ImageDimensionInfoWithData;
+}
+
+export interface ResizeResult {
+  binary: SendBinaryResponseOptions;
+  data: ResizeResponseData;
 }
