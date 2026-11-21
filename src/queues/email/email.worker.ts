@@ -25,6 +25,6 @@ emailWorker.on('failed', (job) => {
   logger.error(`Email job failed ${job?.id}`);
 });
 
-emailWorker.on('error', (err) => {
+emailWorker.on('error', (_err) => {
   // Avoid crashing if Redis is temporarily unreachable
 });

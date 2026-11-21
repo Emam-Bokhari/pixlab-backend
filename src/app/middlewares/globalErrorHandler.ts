@@ -6,7 +6,8 @@ import express from 'express';
 import { TError } from '../interface/error';
 import { HttpError } from '../errors/HttpError';
 
-export const globalErrorHandler = ((err: any, req: Request, res: Response, next: NextFunction) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const globalErrorHandler = ((err: any, req: Request, res: Response, _next: NextFunction) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal server error';
 

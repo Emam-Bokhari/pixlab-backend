@@ -2,6 +2,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { HttpError } from '../errors/HttpError';
 
+import { errorLogger } from './logger';
+
 const UPLOAD_BASE_DIR = path.join(process.cwd(), 'uploads');
 
 const unlinkFile = async (filePath: string): Promise<void> => {
@@ -26,11 +28,11 @@ const unlinkFile = async (filePath: string): Promise<void> => {
     }
 
     await fs.unlink(resolvedPath);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof HttpError) throw error;
 
-    console.error('File deletion failed:', error);
-    throw new HttpError(500, error.message || 'Failed to delete file');
+    errorLogger.error('File deletion failed:', error);
+    throw new HttpError(500, error instanceof Error ? error.message : 'Failed to delete file');
   }
 };
 

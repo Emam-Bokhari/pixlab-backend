@@ -12,10 +12,13 @@ export default [
     ignores: ['node_modules', 'dist'],
     rules: {
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       'no-unused-expressions': 'error',
       'prefer-const': 'error',
-      'no-undef': 'error',
+      'no-undef': 'off',
       'no-console': 'warn',
     },
   },
