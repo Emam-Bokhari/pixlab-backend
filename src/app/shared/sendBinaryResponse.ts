@@ -47,10 +47,7 @@ export const bufferToBase64Url = (buffer: Buffer, mimeType: string): string => {
   return `data:${mimeType};base64,${buffer.toString('base64')}`;
 };
 
-export const sendBinaryResponse = (
-  res: Response,
-  options: SendBinaryResponseOptions,
-): void => {
+export const sendBinaryResponse = (res: Response, options: SendBinaryResponseOptions): void => {
   const {
     buffer,
     filename,

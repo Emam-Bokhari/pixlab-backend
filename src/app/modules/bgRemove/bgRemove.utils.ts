@@ -2,16 +2,7 @@ import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
 import { ImageDetailsWithData } from './bgRemove.interface';
 
-export const ALLOWED_FORMATS = [
-  'png',
-  'jpeg',
-  'jpg',
-  'webp',
-  'bmp',
-  'tiff',
-  'gif',
-  'avif',
-];
+export const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'webp', 'bmp', 'tiff', 'gif', 'avif'];
 
 export interface ParsedHexColor {
   cleanHex: string;
@@ -29,7 +20,10 @@ export const parseHexColor = (rawColor?: string): ParsedHexColor | undefined => 
   }
 
   if (!/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(trimmed)) {
-    throw new HttpError(400, 'Invalid background color hex format. Expected format: #FFFFFF or #FFF');
+    throw new HttpError(
+      400,
+      'Invalid background color hex format. Expected format: #FFFFFF or #FFF',
+    );
   }
 
   const fullHex =
@@ -81,4 +75,3 @@ export const getImageDetails = async (
     imageUrl: base64,
   };
 };
-

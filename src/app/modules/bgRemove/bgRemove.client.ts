@@ -11,11 +11,7 @@ export const removeBackground = async (
   imageBuffer: Buffer,
   bgColorRgb?: RgbColor,
 ): Promise<Buffer> => {
-  const normalizedPng = await sharp(imageBuffer)
-    .rotate()
-    .ensureAlpha()
-    .png()
-    .toBuffer();
+  const normalizedPng = await sharp(imageBuffer).rotate().ensureAlpha().png().toBuffer();
 
   const inputBlob = new Blob([new Uint8Array(normalizedPng)], { type: 'image/png' });
 

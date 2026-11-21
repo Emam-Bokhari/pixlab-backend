@@ -1,14 +1,7 @@
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import {
-  bufferToBase64Url,
-  getFileExtension,
-  getMimeType,
-} from '../../shared/sendBinaryResponse';
-import {
-  ImageDimensionInfoWithData,
-  UpscaleResult,
-} from './upscale.interface';
+import { bufferToBase64Url, getFileExtension, getMimeType } from '../../shared/sendBinaryResponse';
+import { ImageDimensionInfoWithData, UpscaleResult } from './upscale.interface';
 import { getImageDimensionInfo } from './upscale.utils';
 
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'bmp', 'webp', 'tiff', 'avif'];

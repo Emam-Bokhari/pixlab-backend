@@ -1,16 +1,8 @@
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import {
-  bufferToBase64Url,
-  getFileExtension,
-  getMimeType,
-} from '../../shared/sendBinaryResponse';
+import { bufferToBase64Url, getFileExtension, getMimeType } from '../../shared/sendBinaryResponse';
 import { DEFAULT_CROP_STRATEGY, DEFAULT_RESIZE_FIT, RESIZE_LIMITS } from './resize.constant';
-import {
-  ImageDimensionInfoWithData,
-  ResizeRequestInput,
-  ResizeResult,
-} from './resize.interface';
+import { ImageDimensionInfoWithData, ResizeRequestInput, ResizeResult } from './resize.interface';
 import { getImageDimensionInfo } from './resize.utils';
 
 const ALLOWED_FORMATS = ['png', 'jpeg', 'jpg', 'webp', 'gif', 'tiff', 'avif'];
@@ -115,11 +107,7 @@ const resizeImage = async (
   validateTargetDimensions(width, height);
 
   const originalInfo = await getImageDimensionInfo(originalBuffer);
-  const { buffer: resizedBuffer, format } = await performResize(
-    originalBuffer,
-    width,
-    height,
-  );
+  const { buffer: resizedBuffer, format } = await performResize(originalBuffer, width, height);
   const resizedInfo = await getImageDimensionInfo(resizedBuffer);
 
   const originalMime = file.mimetype || getMimeType(originalInfo.format);

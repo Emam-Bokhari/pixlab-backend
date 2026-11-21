@@ -1,16 +1,8 @@
 import sharp from 'sharp';
 import { HttpError } from '../../errors/HttpError';
-import {
-  bufferToBase64Url,
-  getFileExtension,
-  getMimeType,
-} from '../../shared/sendBinaryResponse';
+import { bufferToBase64Url, getFileExtension, getMimeType } from '../../shared/sendBinaryResponse';
 import { ImageDetailsWithData, ReduceResult } from './reduce.interface';
-import {
-  ALLOWED_FORMATS,
-  compressImageToTargetSize,
-  getImageSizeInfo,
-} from './reduce.utils';
+import { ALLOWED_FORMATS, compressImageToTargetSize, getImageSizeInfo } from './reduce.utils';
 
 const reduceImageSize = async (
   file?: Express.Multer.File,
@@ -39,11 +31,7 @@ const reduceImageSize = async (
   }
 
   const originalInfo = await getImageSizeInfo(buffer);
-  const compressionResult = await compressImageToTargetSize(
-    buffer,
-    targetSizeKb,
-    metadata.format,
-  );
+  const compressionResult = await compressImageToTargetSize(buffer, targetSizeKb, metadata.format);
   const reducedInfo = await getImageSizeInfo(compressionResult.buffer);
 
   const reductionPercentage =

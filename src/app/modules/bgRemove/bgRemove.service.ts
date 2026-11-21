@@ -4,10 +4,7 @@ import { removeBackground } from './bgRemove.client';
 import { BgRemoveResult } from './bgRemove.interface';
 import { ALLOWED_FORMATS, getImageDetails, parseHexColor } from './bgRemove.utils';
 
-const removeBg = async (
-  file?: Express.Multer.File,
-  bgColor?: string,
-): Promise<BgRemoveResult> => {
+const removeBg = async (file?: Express.Multer.File, bgColor?: string): Promise<BgRemoveResult> => {
   if (!file || !file.buffer) {
     throw new HttpError(400, 'No image file provided');
   }
