@@ -2,8 +2,6 @@ import http from 'http';
 import app from './app';
 import config from './app/config';
 import { errorLogger, logger } from './app/shared/logger';
-import { emailWorker, emailQueue } from './queues/index';
-import './queues/index';
 
 let server: http.Server;
 
@@ -11,12 +9,6 @@ const shutdown = async () => {
   logger.info('Graceful shutdown started');
 
   try {
-    await Promise.all([emailWorker.close()]);
-    logger.info('Workers closed');
-
-    await Promise.all([emailQueue.close()]);
-    logger.info('Queues closed');
-
     if (server) {
       server.close(() => {
         logger.info('HTTP server closed');

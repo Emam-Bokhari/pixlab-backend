@@ -1,6 +1,6 @@
-# p Backend
+# aiSnapStudio Backend
 
-High-performance image processing REST API and asynchronous background task management service built with Node.js, Express, TypeScript, Sharp, BullMQ, and Redis.
+High-performance image processing REST API built with Node.js, Express, TypeScript, Sharp, and @imgly/background-removal-node.
 
 ---
 
@@ -21,7 +21,6 @@ High-performance image processing REST API and asynchronous background task mana
   - [2. Image Upscaling](#2-image-upscaling)
   - [3. Image Size Reduction](#3-image-size-reduction)
   - [4. Image Resizing](#4-image-resizing)
-  - [5. Support Messaging](#5-support-messaging)
 - [Error Handling](#error-handling)
 - [Available Scripts](#available-scripts)
 - [Logging and Monitoring](#logging-and-monitoring)
@@ -37,8 +36,6 @@ The architecture supports dual consumption modes:
 1. **JSON Data Mode (Default)**: Delivers image metadata alongside Base64 data URLs for immediate frontend previews and dashboard rendering.
 2. **Binary Stream Mode**: Transmits raw binary image streams with rich metadata populated into HTTP response headers for instant download or file piping.
 
-In addition to image processing, it incorporates asynchronous background queues with automatic fallback handling for transactional email notifications and support requests.
-
 ---
 
 ## Key Features
@@ -48,10 +45,9 @@ In addition to image processing, it incorporates asynchronous background queues 
 - **Target Size Reduction**: Iterative image compression allowing users to compress images to reach an exact file size target in kilobytes (KB).
 - **Dimension Resizing**: Precise aspect-ratio-aware dimension scaling, custom crop modes, and attention strategies.
 - **Dual Output Delivery**: Choose between JSON payload responses (with Base64 preview strings) or raw binary downloads using query parameters.
-- **Queue and Worker Management**: BullMQ and Redis-backed task queue with automated fallback to direct SMTP/Resend dispatch when Redis is unavailable.
 - **Enterprise-Grade Logging**: Daily rotating file logs managed by Winston, paired with Morgan HTTP request tracing.
 - **Strict Request Validation**: Comprehensive schema validation for inputs and payloads via Zod.
-- **Graceful Shutdown**: Controlled teardown of HTTP servers, Redis connections, BullMQ queues, and active worker pools on system signals.
+- **Graceful Shutdown**: Controlled teardown of HTTP servers on system termination signals.
 
 ---
 
@@ -67,25 +63,14 @@ In addition to image processing, it incorporates asynchronous background queues 
   ├── Global Error & Validation Handlers (Zod)
   └── Memory Storage Upload Handler (Multer - 50MB Limit)
        │
-       ├── Image Processing Subsystem (Sharp / Imgly)
-       │     ├── Background Removal Service
-       │     ├── Upscaling Service (Lanczos3 + Sharpening)
-       │     ├── Target Size Reduction Service
-       │     └── Dimension Resizing Service
-       │           │
-       │           ├── Mode 1: JSON Payload (Base64 + Metadata)
-       │           └── Mode 2: Binary Image Stream + Custom HTTP Headers
-       │
-       └── Asynchronous Task Subsystem
-             ├── BullMQ Producer ──> [ Redis Queue ]
-             │                             │
-             │                             ▼
-             │                      BullMQ Worker
-             │                             │
-             │                             ▼
-             │                      Email Dispatcher (Nodemailer / Resend)
-             │
-             └── (Fallback if Redis offline) ──> Direct Email Dispatcher
+       └── Image Processing Subsystem (Sharp / Imgly)
+             ├── Background Removal Service
+             ├── Upscaling Service (Lanczos3 + Sharpening)
+             ├── Target Size Reduction Service
+             └── Dimension Resizing Service
+                   │
+                   ├── Mode 1: JSON Payload (Base64 + Metadata)
+                   └── Mode 2: Binary Image Stream + Custom HTTP Headers
 ```
 
 ---
@@ -98,14 +83,12 @@ aiSnapStudio-backend/
 │   ├── app.ts                          # Express application setup, middlewares, and routes
 │   ├── server.ts                       # Server entry point, listener, and graceful shutdown
 │   ├── app/
-│   │   ├── config/                     # Configuration loaders and queue definitions
-│   │   │   ├── bull.ts                 # Redis queue connection configurations
+│   │   ├── config/                     # Configuration loaders
 │   │   │   └── index.ts                # Environment variable mapping
 │   │   ├── errors/                     # Custom error definitions and validation handlers
 │   │   │   ├── HttpError.ts            # Custom HTTP error class
 │   │   │   └── handleZodValidationError.ts # Zod error parser
 │   │   ├── helpers/                    # Helper services
-│   │   │   ├── emailHelper.ts          # Nodemailer and SMTP transport helper
 │   │   │   └── socketHelper.ts         # Real-time socket utilities
 │   │   ├── interface/                  # Global TypeScript interfaces
 │   │   │   ├── error.ts                # Standardized error interfaces
@@ -136,13 +119,6 @@ aiSnapStudio-backend/
 │   │   │   │   ├── resize.route.ts
 │   │   │   │   ├── resize.service.ts
 │   │   │   │   └── resize.utils.ts
-│   │   │   ├── support/                # Support messaging module
-│   │   │   │   ├── support.constant.ts
-│   │   │   │   ├── support.controller.ts
-│   │   │   │   ├── support.interface.ts
-│   │   │   │   ├── support.route.ts
-│   │   │   │   ├── support.service.ts
-│   │   │   │   └── support.validation.ts
 │   │   │   └── upscale/                # Image upscaling endpoints and services
 │   │   │       ├── upscale.controller.ts
 │   │   │       ├── upscale.interface.ts
@@ -154,19 +130,11 @@ aiSnapStudio-backend/
 │   │   │   └── v1.routes.ts            # Route table for /api/v1
 │   │   ├── shared/                     # Reusable utilities
 │   │   │   ├── catchAsync.ts           # Asynchronous controller wrapper
-│   │   │   ├── emailTemplate.ts        # HTML email templates
 │   │   │   ├── logger.ts               # Winston logger configuration
 │   │   │   ├── morgan.ts               # Morgan HTTP request logging setup
 │   │   │   ├── sendBinaryResponse.ts   # Binary stream and custom header sender
 │   │   │   ├── sendResponse.ts         # Standard JSON response formatter
 │   │   │   └── unlinkFile.ts           # Filesystem cleanup utility
-│   │   └── types/                      # Application type definitions
-│   │       └── email.ts
-│   └── queues/                         # BullMQ queue producers and background workers
-│       ├── index.ts
-│       └── email/
-│           ├── email.queue.ts
-│           └── email.worker.ts
 ├── logs/                               # Rotated output log directory
 ├── uploads/                            # Temporary upload processing directory
 ├── .env.example                        # Example environment template
@@ -186,8 +154,6 @@ aiSnapStudio-backend/
 - **Runtime & Language**: Node.js (v18+ or v20+ recommended), TypeScript
 - **Framework**: Express 5
 - **Image Processing**: Sharp, `@imgly/background-removal-node`
-- **Queue & Background Workers**: BullMQ, Redis (via `ioredis`)
-- **Email Services**: Nodemailer (SMTP), Resend API
 - **File Uploads**: Multer (In-Memory buffer storage)
 - **Validation**: Zod
 - **Logging**: Winston, Winston Daily Rotate File, Morgan
@@ -201,7 +167,6 @@ Before starting the application, ensure the following dependencies are installed
 
 1. **Node.js**: Version 18.x, 20.x, or higher.
 2. **NPM**: Version 9.x or higher (or Yarn / PNPM).
-3. **Redis Server**: Version 6.x or higher (required for BullMQ queue operations; the application will fall back to direct processing if Redis is unavailable).
 
 ---
 
@@ -244,6 +209,11 @@ PORT=5000
 IP=127.0.0.1
 NODE_ENV=development
 
+# Frontend
+FRONTEND_URL=http://localhost:3000
+
+# External API Services
+BG_REMOVER_API_URL=
 ```
 
 ### Environment Variables Reference Table
@@ -253,20 +223,7 @@ NODE_ENV=development
 | `PORT` | Number | `5000` | Port on which the HTTP server listens |
 | `IP` | String | `127.0.0.1` | Network interface to bind (optional) |
 | `NODE_ENV` | String | `development` | Runtime environment (`development`, `production`, `test`) |
-| `DATABASE_URL` | String | - | MongoDB connection URI placeholder |
 | `FRONTEND_URL` | String | `http://localhost:3000` | Allowed frontend origin for CORS policies |
-| `SUPPORT_EMAIL` | String | `support@example.com` | Destination inbox for support inquiries |
-| `REDIS_HOST` | String | `127.0.0.1` | Redis host address for BullMQ job queue |
-| `REDIS_PORT` | Number | `6379` | Redis port number |
-| `REDIS_PASSWORD` | String | - | Redis authentication password (leave blank if none) |
-| `REDIS_DB` | Number | `0` | Redis database index |
-| `EMAIL_HOST` | String | `smtp.gmail.com` | SMTP host address for outgoing emails |
-| `EMAIL_PORT` | Number | `587` | SMTP port number |
-| `EMAIL_USER` | String | - | SMTP account username or email address |
-| `EMAIL_PASS` | String | - | SMTP account password or app-specific password |
-| `EMAIL_FROM` | String | - | Default "From" sender address for outgoing emails |
-| `RESEND_API_KEY` | String | - | API key for Resend email delivery |
-| `DEFAULT_EMAIL_FROM` | String | - | Default sender address when using Resend |
 | `BG_REMOVER_API_URL` | String | - | External background remover endpoint (if used) |
 
 ---
@@ -573,52 +530,6 @@ Resizes an image to specified pixel dimensions with cover fit and attention-awar
   - `X-Resized-Width`: `800`
   - `X-Resized-Height`: `600`
   - `X-Resized-Size-KB`: `109.38`
-
----
-
-### 5. Support Messaging
-
-Accepts support inquiries, generates formatted HTML email templates, and enqueues background email dispatch via BullMQ (with automatic fallback to direct SMTP delivery if queue infrastructure is offline).
-
-- **Route**: `POST /api/v1/supports`
-- **Content-Type**: `application/json`
-
-#### Request Payload Specification
-
-| Field | Type | Required | Constraints |
-|---|---|---|---|
-| `name` | String | Yes | 2 to 100 characters |
-| `email` | String | Yes | Valid email format |
-| `subject` | String | Yes | 5 to 150 characters |
-| `message` | String | Yes | 10 to 2000 characters |
-
-#### Request Example
-
-```json
-{
-  "name": "Alex Mercer",
-  "email": "alex.mercer@example.com",
-  "subject": "Inquiry regarding batch API processing",
-  "message": "Hello team, does the upscale endpoint support batch processing via concurrent requests?"
-}
-```
-
-#### Response Example (HTTP 200 OK)
-
-```json
-{
-  "success": true,
-  "statusCode": 200,
-  "message": "Support message sent successfully",
-  "data": {
-    "name": "Alex Mercer",
-    "email": "alex.mercer@example.com",
-    "subject": "Inquiry regarding batch API processing",
-    "message": "Hello team, does the upscale endpoint support batch processing via concurrent requests?",
-    "sentAt": "2026-11-24T08:00:00.000Z"
-  }
-}
-```
 
 ---
 

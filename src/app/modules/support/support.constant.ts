@@ -1,5 +1,0 @@
-export enum SUPPORT_STATUS {
-  OPEN = 'OPEN',
-  IN_PROGRESS = 'IN_PROGRESS',
-  RESOLVED = 'RESOLVED',
-}
