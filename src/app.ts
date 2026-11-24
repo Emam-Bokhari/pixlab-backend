@@ -4,6 +4,8 @@ import { Morgan } from './app/shared/morgan';
 import { Routes } from './app/routes';
 import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 
+export const maxDuration = 60;
+
 const app = express();
 
 app.use(Morgan.successHandler);

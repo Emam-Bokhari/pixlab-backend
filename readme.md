@@ -1,4 +1,4 @@
-# aiSnapStudio Backend
+# Pixlab Backend
 
 High-performance image processing REST API built with Node.js, Express, TypeScript, Sharp, and @imgly/background-removal-node.
 

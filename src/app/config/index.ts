@@ -9,4 +9,6 @@ export default {
   node_env: process.env.NODE_ENV,
   frontend_url: process.env.FRONTEND_URL,
   bg_remover_api_url: process.env.BG_REMOVER_API_URL,
+  imgly_public_path: process.env.IMGLY_PUBLIC_PATH,
+  imgly_model: process.env.IMGLY_MODEL,
 };
