@@ -1,5 +1,5 @@
 import path from 'path';
-import { createLogger, format, transports } from 'winston';
+import { createLogger, format, transports, transport } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
 const { combine, timestamp, label, printf, colorize } = format;
@@ -17,6 +17,31 @@ const fileTransportConfig = (folder: string, type: string) => ({
   maxFiles: '14d',
 });
 
+// Serverless environments (like Vercel and AWS Lambda) have a read-only filesystem (/var/task).
+// Attempting to write files or create folders will throw EROFS.
+// In serverless environments, Console transport is used so platform log drains capture stdout/stderr.
+const isServerless =
+  Boolean(process.env.VERCEL) ||
+  Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) ||
+  Boolean(process.env.LAMBDA_TASK_ROOT);
+
+const appTransports: transport[] = [
+  new transports.Console({
+    format: combine(colorize(), customFormat),
+  }),
+];
+
+const appErrorTransports: transport[] = [
+  new transports.Console({
+    format: combine(colorize(), customFormat),
+  }),
+];
+
+if (!isServerless) {
+  appTransports.push(new DailyRotateFile(fileTransportConfig('success', 'success')));
+  appErrorTransports.push(new DailyRotateFile(fileTransportConfig('error', 'error')));
+}
+
 export const logger = createLogger({
   level: 'info',
   format: combine(
@@ -24,12 +49,7 @@ export const logger = createLogger({
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     customFormat,
   ),
-  transports: [
-    new transports.Console({
-      format: combine(colorize(), customFormat),
-    }),
-    new DailyRotateFile(fileTransportConfig('success', 'success')),
-  ],
+  transports: appTransports,
 });
 
 export const errorLogger = createLogger({
@@ -39,10 +59,5 @@ export const errorLogger = createLogger({
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     customFormat,
   ),
-  transports: [
-    new transports.Console({
-      format: combine(colorize(), customFormat),
-    }),
-    new DailyRotateFile(fileTransportConfig('error', 'error')),
-  ],
+  transports: appErrorTransports,
 });
